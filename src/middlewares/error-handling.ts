@@ -5,7 +5,7 @@ import {Status} from "../types";
 const ErrorHandling = (err: Error, req: Request, res: Response, next: NextFunction) =>  {
     if (err instanceof ApiError) {
         if (err.errors) {
-            return res.status(err.status).send(err.errors)
+            return res.status(err.status).json(err.errors)
         }
         return res.status(err.status).send();
     }

@@ -9,7 +9,7 @@ export class ApiError extends Error {
         super();
         this.status = status;
         this.errors = errors ? {
-            errorsMessage: errors
+            errorsMessages: errors
         } : null;
         Object.setPrototypeOf(this, new.target.prototype);
     }

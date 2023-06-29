@@ -24,7 +24,7 @@ export type FieldError = {
 }
 
 export type ErrorsMessage = {
-    errorsMessage: FieldError[]
+    errorsMessages: FieldError[]
 }
 
 export type RouteMiddleware = (req: Request, res: Response,  next: NextFunction) => void
