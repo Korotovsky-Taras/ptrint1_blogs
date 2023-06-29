@@ -6,7 +6,7 @@ export const BlogsDto = {
     },
     blog({id, name, description, websiteUrl}: Blog): BlogViewModel {
         return {
-            id,
+            id: String(id),
             name,
             description,
             websiteUrl
