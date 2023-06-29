@@ -21,7 +21,7 @@ export const authBasicValidation = (req: Request, res: Response, next: NextFunct
         const authorizationData = authorization.split(" ")
         if (authorizationData.length > 1 && authorizationData[0] === 'Basic') {
             const basicAuth = authorizationData[1];
-            if (validateAuth(isBase64(basicAuth) ? atob(basicAuth) : basicAuth)) {
+            if (isBase64(basicAuth) && validateAuth(atob(basicAuth))) {
                 return next();
             }
         }
