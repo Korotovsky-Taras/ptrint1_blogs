@@ -4,21 +4,35 @@ import {checkSchema} from "express-validator";
 export const blogsCreationValidator = withValidator(() => {
     return [
         checkSchema({
-            description: {
+            name: {
+                in: ['body'],
                 isString: {
-                    bail: true,
+                    errorMessage: "should be a string",
+                },
+                isLength: {
+                    options: { min: 1, max: 15 },
+                    errorMessage: "length should be > 0 < 15"
+                },
+                trim: true,
+            }
+        }),
+        checkSchema({
+            description: {
+                in: ['body'],
+                isString: {
                     errorMessage: "should be a string",
                 },
                 isLength: {
                     options: { min: 1, max: 500 },
                     errorMessage: "length should be > 0 < 500"
                 },
+                trim: true,
             }
         }),
         checkSchema({
             websiteUrl: {
+                in: ['body'],
                 isString: {
-                    bail: true,
                     errorMessage: "should be a string",
                 },
                 isLength: {
@@ -28,19 +42,8 @@ export const blogsCreationValidator = withValidator(() => {
                 matches: {
                     options: /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
                     errorMessage: "should match pattern 'https://'"
-                }
-            }
-        }),
-        checkSchema({
-            name: {
-                isString: {
-                    bail: true,
-                    errorMessage: "should be a string",
                 },
-                isLength: {
-                    options: { min: 1, max: 15 },
-                    errorMessage: "length should be > 0 < 15"
-                },
+                trim: true,
             }
         }),
     ]
