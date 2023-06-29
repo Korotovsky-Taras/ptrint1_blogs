@@ -4,18 +4,6 @@ import {checkSchema} from "express-validator";
 export const blogsCreationValidator = withValidator(() => {
     return [
         checkSchema({
-            name: {
-                isString: {
-                    bail: true,
-                    errorMessage: "should be a string",
-                },
-                isLength: {
-                    options: { min: 1, max: 15 },
-                    errorMessage: "length should be > 0 < 15"
-                },
-            }
-        }),
-        checkSchema({
             description: {
                 isString: {
                     bail: true,
@@ -41,6 +29,18 @@ export const blogsCreationValidator = withValidator(() => {
                     options: /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
                     errorMessage: "should match pattern 'https://'"
                 }
+            }
+        }),
+        checkSchema({
+            name: {
+                isString: {
+                    bail: true,
+                    errorMessage: "should be a string",
+                },
+                isLength: {
+                    options: { min: 1, max: 15 },
+                    errorMessage: "length should be > 0 < 15"
+                },
             }
         }),
     ]
