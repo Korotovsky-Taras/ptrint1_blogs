@@ -5,16 +5,6 @@ import {blogsRepository} from "../repositories";
 export const postsUpdateValidator = withValidator(() => {
     return [
         checkSchema({
-            blogId: {
-                in: ['body'],
-                isNumeric: {
-                    options: {
-                        no_symbols: true,
-                    },
-                },
-            }
-        }),
-        checkSchema({
             shortDescription: {
                 in: ['body'],
                 trim: true,
@@ -57,8 +47,10 @@ export const postsUpdateValidator = withValidator(() => {
             blogId: {
                 in: ['body'],
                 trim: true,
-                isString: {
-                    errorMessage: "should be a string",
+                isNumeric: {
+                    options: {
+                        no_symbols: true,
+                    },
                 },
                 isLength: {
                     options: { min: 1 },
