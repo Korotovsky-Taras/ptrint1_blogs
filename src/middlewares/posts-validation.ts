@@ -64,6 +64,11 @@ export const postsCreationValidator = withValidator(() => {
         checkSchema({
             blogId: {
                 in: ['body'],
+                isNumeric: {
+                    options: {
+                        no_symbols: true,
+                    },
+                },
                 custom: {
                     options: (blogId) => blogsRepository.findBlogById(Number(blogId)),
                     errorMessage: "wrong id",
@@ -73,3 +78,5 @@ export const postsCreationValidator = withValidator(() => {
         ...postsUpdateValidator,
     ]
 })
+
+console.log(blogsRepository.findBlogById(Number("602afe92-7d97-4395-b1b9-6cf98b351bbe")), Number("602afe92-7d97-4395-b1b9-6cf98b351bbe"))
