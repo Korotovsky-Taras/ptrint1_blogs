@@ -5,6 +5,16 @@ import {blogsRepository} from "../repositories";
 export const postsUpdateValidator = withValidator(() => {
     return [
         checkSchema({
+            blogId: {
+                in: ['body'],
+                isNumeric: {
+                    options: {
+                        no_symbols: true,
+                    },
+                },
+            }
+        }),
+        checkSchema({
             shortDescription: {
                 in: ['body'],
                 trim: true,
@@ -61,22 +71,15 @@ export const postsUpdateValidator = withValidator(() => {
 
 export const postsCreationValidator = withValidator(() => {
     return [
+        ...postsUpdateValidator,
         checkSchema({
             blogId: {
                 in: ['body'],
-                isNumeric: {
-                    options: {
-                        no_symbols: true,
-                    },
-                },
                 custom: {
                     options: (blogId) => blogsRepository.findBlogById(Number(blogId)),
                     errorMessage: "wrong id",
                 },
             }
         }),
-        ...postsUpdateValidator,
     ]
 })
-
-console.log(blogsRepository.findBlogById(Number("602afe92-7d97-4395-b1b9-6cf98b351bbe")), Number("602afe92-7d97-4395-b1b9-6cf98b351bbe"))
