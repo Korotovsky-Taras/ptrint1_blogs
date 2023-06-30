@@ -6,6 +6,7 @@ export const blogsCreationValidator = withValidator(() => {
         checkSchema({
             name: {
                 in: ['body'],
+                trim: true,
                 isString: {
                     errorMessage: "should be a string",
                 },
@@ -13,12 +14,12 @@ export const blogsCreationValidator = withValidator(() => {
                     options: { min: 1, max: 15 },
                     errorMessage: "length should be > 0 < 15"
                 },
-                trim: true,
             }
         }),
         checkSchema({
             description: {
                 in: ['body'],
+                trim: true,
                 isString: {
                     errorMessage: "should be a string",
                 },
@@ -26,12 +27,12 @@ export const blogsCreationValidator = withValidator(() => {
                     options: { min: 1, max: 500 },
                     errorMessage: "length should be > 0 < 500"
                 },
-                trim: true,
             }
         }),
         checkSchema({
             websiteUrl: {
                 in: ['body'],
+                trim: true,
                 isString: {
                     errorMessage: "should be a string",
                 },
@@ -43,7 +44,6 @@ export const blogsCreationValidator = withValidator(() => {
                     options: /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
                     errorMessage: "should match pattern 'https://'"
                 },
-                trim: true,
             }
         }),
     ]
