@@ -16,7 +16,7 @@ export class ApiError extends Error {
 }
 
 export const normalizeValidationError = (req: Request): FieldError[] => {
-    const result: ValidationError[] = validationResult(req).array();
+    const result: ValidationError[] = validationResult(req).array({onlyFirstError: true});
     const errors: FieldError[] = [];
 
     result.forEach(error => {

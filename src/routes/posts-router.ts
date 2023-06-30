@@ -1,6 +1,6 @@
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
 import {PostsRouterController} from "../controllers/PostsRouterController";
-import {postsCreationValidator} from "../middlewares/posts-validation";
+import {postsCreationValidator, postsUpdateValidator} from "../middlewares/posts-validation";
 import {IPostsRouterController, Route, RouterMethod} from "../types";
 
 
@@ -27,7 +27,7 @@ const postSingleUpdateRoute: Route<PostsRouterController> = {
     action: 'updatePost',
     middlewares: [
         authBasicValidation,
-        postsCreationValidator
+        postsUpdateValidator
     ]
 }
 
@@ -38,7 +38,7 @@ const postsCreationRoute: Route<PostsRouterController> = {
     action: 'createPost',
     middlewares: [
         authBasicValidation,
-        postsCreationValidator
+        postsCreationValidator,
     ]
 }
 

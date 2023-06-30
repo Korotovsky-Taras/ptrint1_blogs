@@ -1,7 +1,8 @@
 import {withValidator} from "../utils/withValidator";
 import {checkSchema} from "express-validator";
+import {blogsRepository} from "../repositories";
 
-export const postsCreationValidator = withValidator(() => {
+export const postsUpdateValidator = withValidator(() => {
     return [
         checkSchema({
             shortDescription: {
@@ -53,6 +54,21 @@ export const postsCreationValidator = withValidator(() => {
                     errorMessage: "length should be > 0"
                 },
                 trim: true,
+            }
+        }),
+    ]
+})
+
+export const postsCreationValidator = withValidator(() => {
+    return [
+        ...postsUpdateValidator,
+        checkSchema({
+            blogId: {
+                in: ['body'],
+                custom: {
+                    options: (blogId) => blogsRepository.findBlogById(Number(blogId)),
+                    errorMessage: "wrong id",
+                },
             }
         }),
     ]

@@ -1,5 +1,6 @@
-import {Blog, Post} from "../types";
+import {Post} from "../types";
 import {PostsCreateModel, PostsUpdateModel} from "../types/request/posts";
+import {blogsRepository} from "./blogs-repository";
 
 const postsDbInstance: Post[] = [];
 
@@ -16,17 +17,21 @@ export const postsRepository = {
     getPosts(): Post[] {
         return postsModel;
     },
-    createPost(input: PostsCreateModel, blog: Blog): Post {
-        const newPost: Post = {
-            id: String(postsModel.length + 1),
-            title: input.title,
-            shortDescription: input.shortDescription,
-            content: input.content,
-            blogId: String(blog.id),
-            blogName: blog.name,
+    createPost(input: PostsCreateModel): Post | null {
+        const blog = blogsRepository.findBlogById(Number(input.blogId))
+        if (blog) {
+            const newPost: Post = {
+                id: String(postsModel.length + 1),
+                title: input.title,
+                shortDescription: input.shortDescription,
+                content: input.content,
+                blogId: String(blog.id),
+                blogName: blog.name,
+            }
+            postsModel.push(newPost);
+            return newPost;
         }
-        postsModel.push(newPost);
-        return newPost;
+        return null;
     },
     findPostById(id: string): Post | null {
         return postsModel.find(p => p.id === id) ?? null;
