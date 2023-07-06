@@ -17,34 +17,34 @@ import {
 
 export class BlogsRouterController implements IBlogsRouterController {
 
-    getAll(req: Request, res: Response<BlogViewModel[]>, next: NextFunction) {
-        const blogs: Blog[] = blogsRepository.getBlogs();
+    async getAll(req: Request, res: Response<BlogViewModel[]>, next: NextFunction) {
+        const blogs: Blog[] = await blogsRepository.getBlogs();
         return res.status(Status.OK).send(BlogsDto.allBlogs(blogs));
     }
 
-    createBlog(req: RequestWithBody<BlogCreateModel>, res: Response<BlogViewModel>, next: NextFunction) {
-        const blog: Blog = blogsRepository.createBlog(req.body);
+    async createBlog(req: RequestWithBody<BlogCreateModel>, res: Response<BlogViewModel>, next: NextFunction) {
+        const blog: Blog = await blogsRepository.createBlog(req.body);
         return res.status(Status.CREATED).send(BlogsDto.blog(blog));
     }
 
-    getBlog(req: RequestWithParamsBody<ParamIdModel, BlogCreateModel>, res: Response<BlogViewModel | null>, next: NextFunction) {
-        const blog = blogsRepository.findBlogById(Number(req.params.id));
+    async getBlog(req: RequestWithParamsBody<ParamIdModel, BlogCreateModel>, res: Response<BlogViewModel | null>, next: NextFunction) {
+        const blog = await blogsRepository.findBlogById(Number(req.params.id));
         if (blog) {
             return res.status(Status.OK).send(BlogsDto.blog(blog));
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
 
-    updateBlog(req: RequestWithParamsBody<ParamIdModel, BlogUpdateModel>, res: Response, next: NextFunction) {
-        const blog = blogsRepository.updateBlogById(Number(req.params.id), req.body);
-        if (blog) {
+    async updateBlog(req: RequestWithParamsBody<ParamIdModel, BlogUpdateModel>, res: Response, next: NextFunction) {
+        const isUpdated : boolean = await blogsRepository.updateBlogById(Number(req.params.id), req.body);
+        if (isUpdated) {
             return res.sendStatus(Status.NO_CONTENT);
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
 
-    deleteBlog(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        const isDeleted = blogsRepository.deleteBlogById(Number(req.params.id));
+    async deleteBlog(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
+        const isDeleted = await blogsRepository.deleteBlogById(Number(req.params.id));
         if (isDeleted) {
             return res.sendStatus(Status.NO_CONTENT);
         }

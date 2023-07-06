@@ -16,37 +16,37 @@ import {PostsCreateModel, PostsUpdateModel} from "../types/request/posts";
 
 export class PostsRouterController implements IPostsRouterController {
 
-    getAll(req: Request, res: Response<PostViewModel[]>, next: NextFunction) {
-        const posts: Post[] = postsRepository.getPosts();
+    async getAll(req: Request, res: Response<PostViewModel[]>, next: NextFunction) {
+        const posts: Post[] = await postsRepository.getPosts();
         return res.status(Status.OK).send(PostsDto.allPosts(posts));
     }
 
-    createPost(req: RequestWithBody<PostsCreateModel>, res: Response<PostViewModel>, next: NextFunction) {
-        const post = postsRepository.createPost(req.body);
+    async createPost(req: RequestWithBody<PostsCreateModel>, res: Response<PostViewModel>, next: NextFunction) {
+        const post = await postsRepository.createPost(req.body);
         if (post) {
             return res.status(Status.CREATED).send(PostsDto.post(post));
         }
         return res.sendStatus(Status.BAD_REQUEST);
     }
 
-    getPost(req: RequestWithParamsBody<ParamIdModel, PostsCreateModel>, res: Response<PostViewModel | null>, next: NextFunction) {
-        const post = postsRepository.findPostById(req.params.id);
+    async getPost(req: RequestWithParamsBody<ParamIdModel, PostsCreateModel>, res: Response<PostViewModel | null>, next: NextFunction) {
+        const post = await postsRepository.findPostById(req.params.id);
         if (post) {
             return res.status(Status.OK).send(PostsDto.post(post));
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
 
-    updatePost(req: RequestWithParamsBody<ParamIdModel, PostsUpdateModel>, res: Response, next: NextFunction) {
-        const post = postsRepository.updatePostById(req.params.id, req.body);
+    async updatePost(req: RequestWithParamsBody<ParamIdModel, PostsUpdateModel>, res: Response, next: NextFunction) {
+        const post = await postsRepository.updatePostById(req.params.id, req.body);
         if (post) {
             return res.sendStatus(Status.NO_CONTENT);
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
 
-    deletePost(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        const isDeleted = postsRepository.deletePostById(req.params.id);
+    async deletePost(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
+        const isDeleted = await postsRepository.deletePostById(req.params.id);
         if (isDeleted) {
             return res.sendStatus(Status.NO_CONTENT);
         }

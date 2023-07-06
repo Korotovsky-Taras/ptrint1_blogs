@@ -14,11 +14,11 @@ const createPostsModel = (): Post[] => {
 const postsModel: Post[] = createPostsModel();
 
 export const postsRepository = {
-    getPosts(): Post[] {
+    async getPosts(): Promise<Post[]> {
         return postsModel;
     },
-    createPost(input: PostsCreateModel): Post | null {
-        const blog = blogsRepository.findBlogById(Number(input.blogId))
+    async createPost(input: PostsCreateModel): Promise<Post | null> {
+        const blog = await blogsRepository.findBlogById(Number(input.blogId))
         if (blog) {
             const newPost: Post = {
                 id: String(postsModel.length + 1),
@@ -33,11 +33,11 @@ export const postsRepository = {
         }
         return null;
     },
-    findPostById(id: string): Post | null {
+    async findPostById(id: string): Promise<Post | null> {
         return postsModel.find(p => p.id === id) ?? null;
     },
-    updatePostById(id: string, input: PostsUpdateModel): Post | null {
-        let post = this.findPostById(id);
+    async updatePostById(id: string, input: PostsUpdateModel): Promise<Post | null> {
+        let post = await this.findPostById(id);
         if (post) {
             post.title = input.title;
             post.shortDescription = input.shortDescription;
@@ -47,7 +47,7 @@ export const postsRepository = {
         }
         return null;
     },
-    deletePostById(id: string): boolean {
+    async deletePostById(id: string): Promise<boolean> {
         for (let i = 0; i < postsModel.length; i++) {
             if (postsModel[i].id === id) {
                 postsModel.splice(i, 1);
@@ -56,7 +56,7 @@ export const postsRepository = {
         }
         return false;
     },
-    clear(): void {
+    async clear(): Promise<void> {
         postsModel.splice(0, postsModel.length)
     }
 }

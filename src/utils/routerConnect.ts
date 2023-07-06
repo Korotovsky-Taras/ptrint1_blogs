@@ -6,9 +6,14 @@ export const connectRouter = (routes: Route<any>[]) => {
     routes.forEach(router => {
         (app as any)[router.method](router.route,
             router.middlewares ? [...router.middlewares] : [],
-            (req: Request<any, any, any, any>, res: Response, next: NextFunction) => {
+            async (req: Request<any, any, any, any>, res: Response, next: NextFunction) => {
                 try {
-                    router.controller[router.action](req, res, next);
+                    const controllerResponse: Response = await router.controller[router.action](req, res, next);
+                    // проверяем response на наличие заголовка ответа
+                    if (!controllerResponse.headersSent) {
+                        // здесь можно логировать те контроллеры которые не закрыли ответ
+                        controllerResponse.end();
+                    }
                 } catch (err) {
                     next(err)
                 }

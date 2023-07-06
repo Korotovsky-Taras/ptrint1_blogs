@@ -1,12 +1,12 @@
 import {BlogsRouterController} from "../controllers/BlogsRouterController";
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
 import {blogsCreationValidator} from "../middlewares/blogs-validation";
-import {IBlogsRouterController, Route, RouterMethod} from "../types";
+import {Route, RouterMethod} from "../types";
 
 
-const blogsRouterController = new BlogsRouterController();
+export const blogsRouterController = new BlogsRouterController();
 
-const blogsRoute: Route<BlogsRouterController> = {
+export const blogsRoute: Route<BlogsRouterController> = {
     route: "/blogs",
     method: RouterMethod.GET,
     controller: blogsRouterController,
@@ -52,7 +52,7 @@ const blogsDeletingRoute: Route<BlogsRouterController> = {
     ]
 }
 
-export const blogRoutes: Route<IBlogsRouterController>[] = [
+export const blogRoutes: Route<BlogsRouterController>[] = [
     blogsRoute,
     blogSingleRoute,
     blogsCreationRoute,
