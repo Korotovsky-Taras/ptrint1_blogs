@@ -20,6 +20,7 @@ const db = client.db(process.env.NODE_ENV);
 
 export const blogsCollection = db.collection<Blog>("blogs");
 export const postsCollection = db.collection<Post>("posts");
+export const logsCollection = db.collection<Post>("logs");
 
 export const connectDb = async () => {
     try {
