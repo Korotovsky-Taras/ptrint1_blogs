@@ -1,3 +1,3 @@
 import {Blog} from "../blogs";
 
-export type BlogViewModel = Pick<Blog, 'name' | 'description' | 'websiteUrl'> & { id: string }
+export type BlogViewModel = Pick<Blog, 'id' | 'name' | 'description' | 'websiteUrl' | 'isMembership' | 'createdAt'>

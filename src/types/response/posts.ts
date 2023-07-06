@@ -1,3 +1,3 @@
 import {Post} from "../posts";
 
-export type PostViewModel = Post //Pick<Post, ...>
+export type PostViewModel = Pick<Post, 'id' | 'title' | 'shortDescription' | 'content' | 'blogId' | 'blogName' | 'createdAt' | 'isMembership'>
