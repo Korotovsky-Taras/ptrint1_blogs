@@ -3,7 +3,7 @@ import {MongoClient, ServerApiVersion} from "mongodb";
 import {Blog, Post} from "./types";
 
 if (process.env.NODE_ENV != 'production') {
-    env.config({ path: `.env.${process.env.NODE_ENV}` });
+    env.config({ path: `.env.development` });
 } else {
     env.config();
 }
