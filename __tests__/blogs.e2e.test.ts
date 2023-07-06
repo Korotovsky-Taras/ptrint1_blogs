@@ -1,7 +1,6 @@
 import supertest from "supertest";
 import {app} from "../src/app";
 import {BlogCreateModel, Status} from "../src/types";
-import {blogsRepository, postsRepository} from "../src/repositories";
 import {PostsCreateModel} from "../src/types/request/posts";
 
 const requestApp = supertest(app);
@@ -77,36 +76,42 @@ describe("blogs testing", () => {
 
     it("should create blog", async () => {
 
-        await requestApp
+        const result = await requestApp
             .post("/blogs")
             .set('Authorization', 'Basic ' + authB64)
             .set('Content-Type', 'application/json')
             .send(validBlogData)
             .expect(Status.CREATED)
 
-        expect(blogsRepository.getBlogs()).toContainEqual({
-            id: expect.any(Number),
+
+        expect(result.body).toEqual({
+            id: expect.any(String),
             name: validBlogData.name,
             description: validBlogData.description,
-            websiteUrl: validBlogData.websiteUrl
+            websiteUrl: validBlogData.websiteUrl,
+            isMembership: expect.any(Boolean),
+            createdAt: expect.any(String),
         })
 
     })
 
     it("should create post", async () => {
 
-        await requestApp
+        const result = await requestApp
             .post("/posts")
             .set('Authorization', 'Basic ' + authB64)
             .set('Content-Type', 'application/json')
             .send(validPostData)
             .expect(Status.CREATED)
 
-        expect(blogsRepository.getBlogs()).toContainEqual({
-            id: expect.any(Number),
-            name: validBlogData.name,
-            description: validBlogData.description,
-            websiteUrl: validBlogData.websiteUrl
+        expect(result.body).toEqual({
+            id: expect.any(String),
+            blogName: expect.any(String),
+            title: validPostData.title,
+            shortDescription: validPostData.shortDescription,
+            content: validPostData.content,
+            blogId: validPostData.blogId,
+            createdAt: expect.any(String),
         })
 
     })
@@ -126,13 +131,20 @@ describe("blogs testing", () => {
             } as PostsCreateModel)
             .expect(Status.NO_CONTENT)
 
-        expect(postsRepository.getPosts()).toContainEqual({
+
+        const result = await requestApp
+            .get("/posts/1")
+            .set('Content-Type', 'application/json')
+            .expect(Status.OK)
+
+        expect(result.body).toEqual({
             id: expect.any(String),
             title: newTitle,
             shortDescription: expect.any(String),
             content: expect.any(String),
             blogName: expect.any(String),
-            blogId: expect.any(String)
+            blogId: expect.any(String),
+            createdAt: expect.any(String),
         })
 
     })
