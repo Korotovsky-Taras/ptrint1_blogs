@@ -20,3 +20,8 @@ export interface IPostsRouterController {
     updatePost(req: Request, res: Response, next: NextFunction): Promise<Response>,
     deletePost(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
+
+export interface ILogsRouterController {
+    getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    deleteAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+}

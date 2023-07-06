@@ -16,8 +16,10 @@ const client = new MongoClient(process.env.MONGO_URL!, {
     }
 });
 
-export const blogsCollection = client.db(process.env.NODE_ENV).collection<Blog>("blogs");
-export const postsCollection = client.db(process.env.NODE_ENV).collection<Post>("posts");
+const db = client.db(process.env.NODE_ENV);
+
+export const blogsCollection = db.collection<Blog>("blogs");
+export const postsCollection = db.collection<Post>("posts");
 
 export const connectDb = async () => {
     try {
