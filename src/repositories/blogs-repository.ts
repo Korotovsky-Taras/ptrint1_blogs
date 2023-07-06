@@ -29,7 +29,7 @@ export const blogsRepository = {
     },
     async updateBlogById(id: string, input: BlogUpdateModel): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
-            const result = await blogsCollection.updateOne({id: id}, input);
+            const result = await blogsCollection.updateOne({id: id}, { $set : input});
             return result.matchedCount === 1;
         })
     },
