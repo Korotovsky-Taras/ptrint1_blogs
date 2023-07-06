@@ -12,7 +12,7 @@ export const postsRepository = {
     },
     async createPost(input: PostsCreateModel): Promise<Post | null> {
         return withMongoLogger<Post| null>(async () => {
-            const blog: Blog | null = await blogsRepository.findBlogById(Number(input.blogId))
+            const blog: Blog | null = await blogsRepository.findBlogById(input.blogId)
             if (blog) {
                 const collectionCount: number = await postsCollection.countDocuments()
                 const newPost: Post = {

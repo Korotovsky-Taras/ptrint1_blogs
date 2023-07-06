@@ -28,7 +28,7 @@ export class BlogsRouterController implements IBlogsRouterController {
     }
 
     async getBlog(req: RequestWithParamsBody<ParamIdModel, BlogCreateModel>, res: Response<BlogViewModel | null>, next: NextFunction) {
-        const blog = await blogsRepository.findBlogById(Number(req.params.id));
+        const blog = await blogsRepository.findBlogById(req.params.id);
         if (blog) {
             return res.status(Status.OK).send(BlogsDto.blog(blog));
         }
@@ -36,7 +36,7 @@ export class BlogsRouterController implements IBlogsRouterController {
     }
 
     async updateBlog(req: RequestWithParamsBody<ParamIdModel, BlogUpdateModel>, res: Response, next: NextFunction) {
-        const isUpdated : boolean = await blogsRepository.updateBlogById(Number(req.params.id), req.body);
+        const isUpdated : boolean = await blogsRepository.updateBlogById(req.params.id, req.body);
         if (isUpdated) {
             return res.sendStatus(Status.NO_CONTENT);
         }
@@ -44,7 +44,7 @@ export class BlogsRouterController implements IBlogsRouterController {
     }
 
     async deleteBlog(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        const isDeleted = await blogsRepository.deleteBlogById(Number(req.params.id));
+        const isDeleted = await blogsRepository.deleteBlogById(req.params.id);
         if (isDeleted) {
             return res.sendStatus(Status.NO_CONTENT);
         }

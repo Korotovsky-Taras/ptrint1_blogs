@@ -4,12 +4,14 @@ export const BlogsDto = {
     allBlogs(blogs: Blog[]): BlogViewModel[] {
         return blogs.map(this.blog)
     },
-    blog({id, name, description, websiteUrl}: Blog): BlogViewModel {
+    blog({id, name, description, websiteUrl, createdAt, isMembership}: Blog): BlogViewModel {
         return {
-            id: String(id),
+            id,
             name,
             description,
-            websiteUrl
+            websiteUrl,
+            createdAt,
+            isMembership,
         }
     }
 }

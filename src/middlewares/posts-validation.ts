@@ -68,7 +68,7 @@ export const postsCreationValidator = withValidator(() => {
             blogId: {
                 in: ['body'],
                 custom: {
-                    options: (blogId) => blogsRepository.findBlogById(Number(blogId)),
+                    options: (blogId) => blogsRepository.findBlogById(blogId),
                     errorMessage: "wrong id",
                 },
             }

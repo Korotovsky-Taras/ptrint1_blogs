@@ -13,7 +13,7 @@ export const blogsRepository = {
         return withMongoLogger<Blog>(async () => {
             const collectionCount: number = await blogsCollection.countDocuments()
             const newBlog: Blog = {
-                id: collectionCount + 1,
+                id: String(collectionCount + 1),
                 ...input,
                 createdAt: (new Date()).toISOString(),
                 isMembership: false,
@@ -22,18 +22,18 @@ export const blogsRepository = {
             return newBlog;
         })
     },
-    async findBlogById(id: number): Promise<Blog | null> {
+    async findBlogById(id: string): Promise<Blog | null> {
         return withMongoLogger<Blog | null>(async () => {
             return await blogsCollection.findOne({id: id});
         })
     },
-    async updateBlogById(id: number, input: BlogUpdateModel): Promise<boolean> {
+    async updateBlogById(id: string, input: BlogUpdateModel): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
             const result = await blogsCollection.updateOne({id: id}, {$set: input});
             return result.matchedCount === 1;
         })
     },
-    async deleteBlogById(id: number): Promise<boolean> {
+    async deleteBlogById(id: string): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
             const result = await blogsCollection.deleteOne({id: id});
             return result.deletedCount === 1;
