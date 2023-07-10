@@ -1,6 +1,6 @@
 import env from "dotenv";
 import {MongoClient, ServerApiVersion} from "mongodb";
-import {Blog, Post} from "./types";
+import {Blog, Log, Post} from "./types";
 
 if (process.env.NODE_ENV != 'production') {
     env.config({ path: `.env.development` });
@@ -20,7 +20,7 @@ const db = client.db(process.env.NODE_ENV);
 
 export const blogsCollection = db.collection<Blog>("blogs");
 export const postsCollection = db.collection<Post>("posts");
-export const logsCollection = db.collection<Post>("logs");
+export const logsCollection = db.collection<Log>("logs");
 
 export const connectDb = async () => {
     try {

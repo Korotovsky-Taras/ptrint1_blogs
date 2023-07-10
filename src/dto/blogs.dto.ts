@@ -1,12 +1,12 @@
-import {Blog, BlogViewModel} from "../types";
+import {BlogMongoModel, BlogViewModel} from "../types";
 
 export const BlogsDto = {
-    allBlogs(blogs: Blog[]): BlogViewModel[] {
+    allBlogs(blogs: BlogMongoModel[]): BlogViewModel[] {
         return blogs.map(this.blog)
     },
-    blog({id, name, description, websiteUrl, createdAt, isMembership}: Blog): BlogViewModel {
+    blog({_id, name, description, websiteUrl, createdAt, isMembership}: BlogMongoModel): BlogViewModel {
         return {
-            id,
+            id: _id.toString(),
             name,
             description,
             websiteUrl,

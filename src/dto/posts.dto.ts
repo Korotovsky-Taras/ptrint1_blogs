@@ -1,12 +1,12 @@
-import {Post, PostViewModel} from "../types";
+import {PostMongoModel, PostViewModel} from "../types";
 
 export const PostsDto = {
-    allPosts(blogs: Post[]): PostViewModel[] {
+    allPosts(blogs: PostMongoModel[]): PostViewModel[] {
         return blogs.map(this.post)
     },
-    post({ id, title, shortDescription, content, blogId, blogName, createdAt }: Post): PostViewModel {
+    post({ _id, title, shortDescription, content, blogId, blogName, createdAt }: PostMongoModel): PostViewModel {
         return {
-            id,
+            id: _id.toString(),
             title,
             shortDescription,
             content,

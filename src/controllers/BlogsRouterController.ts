@@ -1,8 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {blogsRepository} from "../repositories";
-import {BlogsDto} from "../dto/blogs.dto";
+
 import {
-    Blog,
     BlogCreateModel,
     BlogUpdateModel,
     BlogViewModel,
@@ -18,19 +17,19 @@ import {
 export class BlogsRouterController implements IBlogsRouterController {
 
     async getAll(req: Request, res: Response<BlogViewModel[]>, next: NextFunction) {
-        const blogs: Blog[] = await blogsRepository.getBlogs();
-        return res.status(Status.OK).send(BlogsDto.allBlogs(blogs));
+        const blogs: BlogViewModel[] = await blogsRepository.getBlogs();
+        return res.status(Status.OK).send(blogs);
     }
 
     async createBlog(req: RequestWithBody<BlogCreateModel>, res: Response<BlogViewModel>, next: NextFunction) {
-        const blog: Blog = await blogsRepository.createBlog(req.body);
-        return res.status(Status.CREATED).send(BlogsDto.blog(blog));
+        const blog: BlogViewModel = await blogsRepository.createBlog(req.body);
+        return res.status(Status.CREATED).send(blog);
     }
 
     async getBlog(req: RequestWithParamsBody<ParamIdModel, BlogCreateModel>, res: Response<BlogViewModel | null>, next: NextFunction) {
-        const blog = await blogsRepository.findBlogById(req.params.id);
+        const blog: BlogViewModel | null = await blogsRepository.findBlogById(req.params.id);
         if (blog) {
-            return res.status(Status.OK).send(BlogsDto.blog(blog));
+            return res.status(Status.OK).send(blog);
         }
         return res.sendStatus(Status.NOT_FOUND);
     }

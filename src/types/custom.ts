@@ -18,6 +18,9 @@ export enum Status {
     UNHANDLED=500,
 }
 
+export type ParamIdModel = {
+    id: string
+}
 
 export type FieldError = {
     message: string;

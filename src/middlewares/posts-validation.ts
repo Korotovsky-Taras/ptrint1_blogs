@@ -47,10 +47,8 @@ export const postsUpdateValidator = withValidator(() => {
             blogId: {
                 in: ['body'],
                 trim: true,
-                isNumeric: {
-                    options: {
-                        no_symbols: true,
-                    },
+                isString: {
+                    errorMessage: "should be a string",
                 },
                 isLength: {
                     options: { min: 1 },

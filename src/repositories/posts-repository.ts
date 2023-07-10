@@ -1,49 +1,53 @@
-import {Blog, Post} from "../types";
-import {PostsCreateModel, PostsUpdateModel} from "../types/request/posts";
+import {BlogViewModel, Post, PostMongoModel, PostsCreateModel, PostsUpdateModel, PostViewModel} from "../types";
 import {blogsRepository} from "./blogs-repository";
 import {withMongoLogger} from "../utils/withMongoLogger";
 import {postsCollection} from "../db";
+import {ObjectId} from "mongodb";
+import {PostsDto} from "../dto/posts.dto";
 
 export const postsRepository = {
-    async getPosts(): Promise<Post[]> {
-        return withMongoLogger<Post[]>(async () => {
-            return postsCollection.find({}).toArray();
+    async getPosts(): Promise<PostViewModel[]> {
+        return withMongoLogger<PostViewModel[]>(async () => {
+            const posts: PostMongoModel[] = await postsCollection.find({}).toArray();
+            return PostsDto.allPosts(posts);
         });
     },
-    async createPost(input: PostsCreateModel): Promise<Post | null> {
-        return withMongoLogger<Post| null>(async () => {
-            const blog: Blog | null = await blogsRepository.findBlogById(input.blogId)
+    async createPost(input: PostsCreateModel): Promise<PostViewModel | null> {
+        return withMongoLogger<PostViewModel | null>(async () => {
+            const blog: BlogViewModel | null = await blogsRepository.findBlogById(input.blogId)
             if (blog) {
-                const collectionCount: number = await postsCollection.countDocuments()
                 const newPost: Post = {
-                    id: String(collectionCount + 1),
                     title: input.title,
                     shortDescription: input.shortDescription,
                     content: input.content,
-                    blogId: String(blog.id),
+                    blogId: blog.id,
                     blogName: blog.name,
                     createdAt: (new Date()).toISOString(),
                 }
-                await postsCollection.insertOne(newPost);
-                return newPost;
+                const res = await postsCollection.insertOne(newPost);
+                return PostsDto.post({
+                    _id: res.insertedId,
+                    ...newPost,
+                });
             }
             return null;
         });
     },
-    async findPostById(id: string): Promise<Post | null> {
-        return withMongoLogger<Post | null>(async () => {
-            return await postsCollection.findOne({id: id});
+    async findPostById(id: string): Promise<PostViewModel | null> {
+        return withMongoLogger<PostViewModel | null>(async () => {
+            const post: PostMongoModel | null = await postsCollection.findOne({_id: new ObjectId(id)});
+            return post ? PostsDto.post(post) : null;
         })
     },
     async updatePostById(id: string, input: PostsUpdateModel): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
-            const result = await postsCollection.updateOne({id: id}, {$set: input});
+            const result = await postsCollection.updateOne({_id: new ObjectId(id)}, {$set: input});
             return result.matchedCount === 1;
         })
     },
     async deletePostById(id: string): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
-            const result = await postsCollection.deleteOne({id: id});
+            const result = await postsCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         })
     },

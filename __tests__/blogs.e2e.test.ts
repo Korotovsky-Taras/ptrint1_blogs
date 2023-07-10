@@ -1,7 +1,6 @@
 import supertest from "supertest";
 import {app} from "../src/app";
-import {BlogCreateModel, Status} from "../src/types";
-import {PostsCreateModel} from "../src/types/request/posts";
+import {BlogCreateModel, BlogViewModel, PostsCreateModel, PostViewModel, Status} from "../src/types";
 
 const requestApp = supertest(app);
 const authB64 = Buffer.from("admin:qwerty").toString("base64");
@@ -12,16 +11,20 @@ const validBlogData: BlogCreateModel = {
     websiteUrl: "https://app.by"
 }
 
-const validPostData: PostsCreateModel = {
+const validPostData: Omit<PostsCreateModel, 'blogId'> = {
     title: "valid title",
     shortDescription: "valid short description",
     content: "valid content",
-    blogId: "1"
 }
+
+let createdBlogId: string | null = null;
+let createdPostId: string | null = null;
 
 describe("blogs testing", () => {
 
     beforeAll(async () => {
+        createdBlogId = null;
+        createdPostId = null;
         await supertest(app).delete("/testing/all-data");
     })
 
@@ -60,18 +63,17 @@ describe("blogs testing", () => {
             .expect(Status.UNATHORIZED)
     })
 
-    it("should return not found", async () => {
+    it("should return  database conflict error", async () => {
 
-        await requestApp
+        const result =  await requestApp
             .get("/blogs/1")
             .set('Authorization', 'Basic ' + authB64)
-            .expect(Status.NOT_FOUND)
+            .expect(Status.DB_ERROR)
 
-        await requestApp
-            .get("/posts/1")
-            .set('Authorization', 'Basic ' + authB64)
-            .expect(Status.NOT_FOUND)
-
+        expect(result.body?.errorsMessages).toContainEqual({
+            message: expect.any(String),
+            field: "database",
+        })
     })
 
     it("should create blog", async () => {
@@ -81,8 +83,11 @@ describe("blogs testing", () => {
             .set('Authorization', 'Basic ' + authB64)
             .set('Content-Type', 'application/json')
             .send(validBlogData)
-            .expect(Status.CREATED)
+            .expect(Status.CREATED);
 
+        const {id} : Pick<BlogViewModel, 'id'> = result.body;
+
+        createdBlogId = id;
 
         expect(result.body).toEqual({
             id: expect.any(String),
@@ -97,12 +102,21 @@ describe("blogs testing", () => {
 
     it("should create post", async () => {
 
+        expect(createdBlogId).not.toBe(null);
+
         const result = await requestApp
             .post("/posts")
             .set('Authorization', 'Basic ' + authB64)
             .set('Content-Type', 'application/json')
-            .send(validPostData)
-            .expect(Status.CREATED)
+            .send({
+                ...validPostData,
+                blogId: createdBlogId,
+            } as PostsCreateModel)
+            .expect(Status.CREATED);
+
+        const {id}: Pick<PostViewModel, 'id'> = result.body;
+
+        createdPostId = id;
 
         expect(result.body).toEqual({
             id: expect.any(String),
@@ -110,30 +124,32 @@ describe("blogs testing", () => {
             title: validPostData.title,
             shortDescription: validPostData.shortDescription,
             content: validPostData.content,
-            blogId: validPostData.blogId,
+            blogId: createdBlogId,
             createdAt: expect.any(String),
         })
 
     })
 
     it("should update post", async () => {
+
+        expect(createdPostId).not.toBe(null);
+
         const newTitle = "new title";
 
         await requestApp
-            .put("/posts/1")
+            .put(`/posts/${createdPostId}`)
             .set('Authorization', 'Basic ' + authB64)
             .set('Content-Type', 'application/json')
             .send({
                 title: newTitle,
                 shortDescription: "valid short description",
                 content: "valid content",
-                blogId: "1"
+                blogId: createdBlogId
             } as PostsCreateModel)
             .expect(Status.NO_CONTENT)
 
-
         const result = await requestApp
-            .get("/posts/1")
+            .get(`/posts/${createdPostId}`)
             .set('Content-Type', 'application/json')
             .expect(Status.OK)
 
