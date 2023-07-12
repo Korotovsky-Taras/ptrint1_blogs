@@ -19,7 +19,7 @@ export const postsRepository = {
         return withMongoLogger<PostsListViewModel>(async () => {
 
             const items: PostMongoModel[] = await postsCollection.find(filter)
-                .sort({[query.sortBy]: query.sortDirection })
+                .sort(query.sortBy, query.sortDirection)
                 .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
                 .limit(query.pageSize)
                 .toArray();
