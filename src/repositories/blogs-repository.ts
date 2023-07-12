@@ -19,17 +19,21 @@ export const blogsRepository = {
     async getBlogs(query: BlogPaginationRepositoryModel): Promise<BlogListViewModel> {
         return withMongoLogger<BlogListViewModel>(async () => {
 
-            const totalCount: number = await blogsCollection.countDocuments();
-            const items: BlogMongoModel[] = await blogsCollection.find(query.searchNameTerm != null ? {
-                name: {$regex: query.searchNameTerm, $options: "i" }
-            } : {})
+            let filter: any = {};
+            if (query.searchNameTerm != null) {
+                filter.name = {$regex: query.searchNameTerm, $options: "i" }
+            }
+
+            const items: BlogMongoModel[] = await blogsCollection.find(filter)
                 .sort(query.sortBy, query.sortDirection)
                 .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
                 .limit(query.pageSize)
                 .toArray();
 
+            const totalCount: number = items.length;
+
             return BlogsDto.allBlogs({
-                pagesCount: Math.ceil(items.length/query.pageSize),
+                pagesCount: Math.ceil(totalCount/query.pageSize),
                 page: query.pageNumber,
                 pageSize: query.pageSize,
                 totalCount,

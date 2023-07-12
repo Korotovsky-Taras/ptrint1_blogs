@@ -18,16 +18,16 @@ export const postsRepository = {
     async getPosts(filter: Partial<PostMongoModel>, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
         return withMongoLogger<PostsListViewModel>(async () => {
 
-            const totalCount: number = await postsCollection.countDocuments();
             const items: PostMongoModel[] = await postsCollection.find(filter)
                 .sort({[query.sortBy]: query.sortDirection })
                 .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
                 .limit(query.pageSize)
                 .toArray();
 
+            const totalCount: number = items.length;
 
             return PostsDto.allPosts({
-                pagesCount: Math.ceil(items.length/query.pageSize),
+                pagesCount: Math.ceil(totalCount/query.pageSize),
                 page: query.pageNumber,
                 pageSize: query.pageSize,
                 totalCount,
