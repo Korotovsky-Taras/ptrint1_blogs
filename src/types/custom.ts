@@ -44,12 +44,12 @@ export type QueryGateModel<RegModel, RepoModel extends {[K in keyof RegModel]: a
     [K in keyof RepoModel]: RepoModel[K]
 }
 
-export type SortingDirection = 'asc' | 'desc'
+export type SortingDirection = "asc" | "desc";
 
 export interface PaginationQueryModel extends ParsedQs {
     searchNameTerm?: string,
     sortBy?: string,
-    sortDirection?: SortingDirection,
+    sortDirection?: string,
     pageNumber?: string,
     pageSize?: string,
 }

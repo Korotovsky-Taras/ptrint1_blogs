@@ -23,7 +23,7 @@ export const blogsRepository = {
             const items: BlogMongoModel[] = await blogsCollection.find(query.searchNameTerm != null ? {
                 name: {$regex: query.searchNameTerm, $options: "i" }
             } : {})
-                .sort({[query.sortBy]: query.sortDirection })
+                .sort(query.sortBy, query.sortDirection)
                 .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
                 .limit(query.pageSize)
                 .toArray();

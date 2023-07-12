@@ -7,7 +7,12 @@ import {
     PaginationQueryModel,
     QueryGateModel
 } from "../types";
-import {withExternalValue} from "../utils/withExternalValue";
+import {
+    withExternalDirection,
+    withExternalNumber,
+    withExternalString,
+    withExternalTerm,
+} from "../utils/withExternalQuery";
 
 const initialQuery: QueryGateModel<PaginationQueryModel, BlogPaginationRepositoryModel> = {
     sortBy: "createdAt",
@@ -39,11 +44,11 @@ export const BlogsDto = {
     },
     toRepoQuery(query: PaginationQueryModel): BlogPaginationRepositoryModel {
         return {
-            sortBy: withExternalValue(initialQuery.sortBy, query.sortBy),
-            searchNameTerm: withExternalValue(initialQuery.searchNameTerm, query.searchNameTerm),
-            sortDirection: withExternalValue(initialQuery.sortDirection, query.sortDirection),
-            pageNumber: withExternalValue(initialQuery.pageNumber, Number(query.pageNumber)),
-            pageSize: withExternalValue(initialQuery.pageSize, Number(query.pageSize))
+            sortBy: withExternalString(initialQuery.sortBy, query.sortBy),
+            searchNameTerm: withExternalTerm(initialQuery.searchNameTerm, query.searchNameTerm),
+            sortDirection: withExternalDirection(initialQuery.sortDirection, query.sortDirection),
+            pageNumber: withExternalNumber(initialQuery.pageNumber, query.pageNumber),
+            pageSize: withExternalNumber(initialQuery.pageSize, query.pageSize)
         };
     },
 }

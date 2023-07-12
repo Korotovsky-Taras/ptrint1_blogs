@@ -7,7 +7,7 @@ import {
     PostViewModel,
     QueryGateModel
 } from "../types";
-import {withExternalValue} from "../utils/withExternalValue";
+import {withExternalDirection, withExternalNumber, withExternalString,} from "../utils/withExternalQuery";
 
 const initialQuery: QueryGateModel<PaginationQueryModel, PostPaginationRepositoryModel> = {
     sortBy: "createdAt",
@@ -28,10 +28,10 @@ export const PostsDto = {
     },
     toRepoQuery(query: PaginationQueryModel): PostPaginationRepositoryModel {
         return {
-            sortBy: withExternalValue(initialQuery.sortBy, query.sortBy),
-            sortDirection: withExternalValue(initialQuery.sortDirection, query.sortDirection),
-            pageNumber: withExternalValue(initialQuery.pageNumber, Number(query.pageNumber)),
-            pageSize: withExternalValue(initialQuery.pageSize, Number(query.pageSize))
+            sortBy: withExternalString(initialQuery.sortBy, query.sortBy),
+            sortDirection: withExternalDirection(initialQuery.sortDirection, query.sortDirection),
+            pageNumber: withExternalNumber(initialQuery.pageNumber, query.pageNumber),
+            pageSize: withExternalNumber(initialQuery.pageSize, query.pageSize)
         };
     },
     post({ _id, title, shortDescription, content, blogId, blogName, createdAt }: PostMongoModel): PostViewModel {
