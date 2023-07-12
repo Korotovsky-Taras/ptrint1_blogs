@@ -24,13 +24,13 @@ export const blogsRepository = {
                 filter.name = {$regex: query.searchNameTerm, $options: "i" }
             }
 
+            const totalCount: number = await blogsCollection.countDocuments(filter)
+
             const items: BlogMongoModel[] = await blogsCollection.find(filter)
                 .sort(query.sortBy, query.sortDirection)
                 .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
                 .limit(query.pageSize)
                 .toArray();
-
-            const totalCount: number = items.length;
 
             return BlogsDto.allBlogs({
                 pagesCount: Math.ceil(totalCount/query.pageSize),
