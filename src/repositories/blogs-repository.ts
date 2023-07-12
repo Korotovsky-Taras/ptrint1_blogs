@@ -65,9 +65,9 @@ export const blogsRepository = {
             return null;
         })
     },
-    async findBlogById(id: ObjectId): Promise<BlogViewModel | null> {
+    async findBlogById(id: string): Promise<BlogViewModel | null> {
         return withMongoLogger<BlogViewModel | null>(async () => {
-            const blog: BlogMongoModel | null = await blogsCollection.findOne({_id: id})
+            const blog: BlogMongoModel | null = await blogsCollection.findOne({_id: new ObjectId(id)})
             return blog ? BlogsDto.blog(blog) : null;
         })
     },

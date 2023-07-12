@@ -15,8 +15,9 @@ import {ObjectId} from "mongodb";
 import {PostsDto} from "../dto/posts.dto";
 
 export const postsRepository = {
-    async getPosts(filter: {}, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
+    async getPosts(filter: Partial<PostMongoModel>, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
         return withMongoLogger<PostsListViewModel>(async () => {
+
 
             const totalCount: number = await postsCollection.countDocuments(filter)
 
@@ -44,7 +45,7 @@ export const postsRepository = {
                     title: input.title,
                     shortDescription: input.shortDescription,
                     content: input.content,
-                    blogId: new ObjectId(blog.id),
+                    blogId: blog.id,
                     blogName: blog.name,
                     createdAt: (new Date()).toISOString(),
                 }
