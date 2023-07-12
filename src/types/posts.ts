@@ -1,11 +1,11 @@
-import {WithId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
 import {WithPagination, WithPaginationQuery} from "./custom";
 
 export type Post = {
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: ObjectId,
     blogName: string,
     createdAt: string,
 }

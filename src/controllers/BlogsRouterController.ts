@@ -21,6 +21,7 @@ import {
     Status
 } from "../types";
 import {BlogsDto} from "../dto/blogs.dto";
+import {ObjectId} from "mongodb";
 
 
 export class BlogsRouterController implements IBlogsRouterController {
@@ -41,7 +42,7 @@ export class BlogsRouterController implements IBlogsRouterController {
             title: req.body.title,
             shortDescription: req.body.shortDescription,
             content: req.body.content,
-            blogId: req.params.id
+            blogId: new ObjectId(req.params.id)
         });
         if (post) {
             return res.status(Status.CREATED).send(post);
@@ -50,7 +51,7 @@ export class BlogsRouterController implements IBlogsRouterController {
     }
 
     async getBlog(req: RequestWithParams<ParamIdModel>, res: Response<BlogViewModel | null>) {
-        const blog: BlogViewModel | null = await blogsRepository.findBlogById(req.params.id);
+        const blog: BlogViewModel | null = await blogsRepository.findBlogById(new ObjectId(req.params.id));
         if (blog) {
             return res.status(Status.OK).send(blog);
         }
