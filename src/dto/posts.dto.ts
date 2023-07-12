@@ -11,7 +11,7 @@ import {withExternalDirection, withExternalNumber, withExternalString,} from "..
 
 const initialQuery: QueryGateModel<PaginationQueryModel, PostPaginationRepositoryModel> = {
     sortBy: "createdAt",
-    sortDirection: "asc",
+    sortDirection: "desc",
     pageNumber: 1,
     pageSize: 10
 }

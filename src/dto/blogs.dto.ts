@@ -17,7 +17,7 @@ import {
 const initialQuery: QueryGateModel<PaginationQueryModel, BlogPaginationRepositoryModel> = {
     sortBy: "createdAt",
     searchNameTerm: null,
-    sortDirection: "asc",
+    sortDirection: "desc",
     pageNumber: 1,
     pageSize: 10
 }
