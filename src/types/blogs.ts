@@ -1,4 +1,6 @@
-import {WithId} from "mongodb";
+import {EnhancedOmit, WithId} from "mongodb";
+import {WithPagination, WithPaginationQuery} from "./custom";
+import {Post} from "./posts";
 
 export type Blog = {
     name: string,
@@ -12,7 +14,17 @@ export type BlogMongoModel = WithId<Blog>
 
 export type BlogCreateModel = Pick<Blog, 'name' | 'description' | 'websiteUrl'>;
 
+export type BlogPostCreateModel = Pick<Post, 'title' | 'shortDescription' | 'content'>;
+
 export type BlogUpdateModel = Pick<Blog, 'name' | 'description' | 'websiteUrl'>;
 
-export type BlogViewModel = Pick<Blog, 'name' | 'description' | 'websiteUrl' | 'isMembership' | 'createdAt'> & { id: string}
+export type BlogViewModel = Pick<Blog, 'name' | 'description' | 'websiteUrl' | 'isMembership' | 'createdAt'> & { id: string }
+
+export type BlogListMongoModel = WithPagination<BlogMongoModel>
+
+export type BlogListViewModel = WithPagination<BlogViewModel>
+
+export type BlogPaginationRepositoryModel = EnhancedOmit<WithPaginationQuery, "searchNameTerm"> & {
+    searchNameTerm: string | null,
+}
 

@@ -1,15 +1,40 @@
-import {Blog, BlogCreateModel, BlogMongoModel, BlogUpdateModel, BlogViewModel} from "../types";
+import {
+    Blog,
+    BlogCreateModel,
+    BlogListViewModel,
+    BlogMongoModel,
+    BlogPaginationRepositoryModel,
+    BlogUpdateModel,
+    BlogViewModel,
+    PostsListViewModel
+} from "../types";
 import {blogsCollection} from "../db";
 import {withMongoLogger} from "../utils/withMongoLogger";
 import {ObjectId} from "mongodb";
 import {BlogsDto} from "../dto/blogs.dto";
+import {postsRepository} from "./posts-repository";
 
 
 export const blogsRepository = {
-    async getBlogs(): Promise<BlogViewModel[]> {
-        return withMongoLogger<BlogViewModel[]>(async () => {
-            const blogs: BlogMongoModel[] = await blogsCollection.find({}).toArray();
-            return BlogsDto.allBlogs(blogs);
+    async getBlogs(query: BlogPaginationRepositoryModel): Promise<BlogListViewModel> {
+        return withMongoLogger<BlogListViewModel>(async () => {
+
+            const totalCount: number = await blogsCollection.countDocuments();
+            const items: BlogMongoModel[] = await blogsCollection.find(query.searchNameTerm != null ? {
+                name: {$regex: query.searchNameTerm, $options: "i" }
+            } : {})
+                .sort({[query.sortBy]: query.sortDirection })
+                .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
+                .limit(query.pageSize)
+                .toArray();
+
+            return BlogsDto.allBlogs({
+                pagesCount: Math.ceil(totalCount/query.pageSize),
+                page: query.pageNumber,
+                pageSize: query.pageSize,
+                totalCount,
+                items,
+            });
         })
     },
     async createBlog(input: BlogCreateModel): Promise<BlogViewModel> {
@@ -24,6 +49,16 @@ export const blogsRepository = {
                 _id: res.insertedId,
                 ...newBlog,
             });
+        })
+    },
+    async findBlogPosts(id: string, query: BlogPaginationRepositoryModel): Promise<PostsListViewModel | null> {
+        return withMongoLogger<PostsListViewModel | null>(async () => {
+            const blog: BlogMongoModel | null = await blogsCollection.findOne({_id: new ObjectId(id)})
+            if (blog) {
+                const model: PostsListViewModel = await postsRepository.getPosts({blogId: id}, query);
+                return model;
+            }
+            return null;
         })
     },
     async findBlogById(id: string): Promise<BlogViewModel | null> {

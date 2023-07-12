@@ -22,6 +22,39 @@ export type ParamIdModel = {
     id: string
 }
 
+export type WithPaginationQuery = {
+    sortBy: string,
+    sortDirection: SortingDirection,
+    pageNumber: number,
+    pageSize: number
+};
+
+export type WithPagination<T> = {
+    pagesCount: number,
+    page: number,
+    pageSize: number,
+    totalCount: number,
+    items: T[];
+};
+
+export interface ParsedQs { [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[] }
+
+// Дополнительная проверка на совпадение типов Query моделей
+export type QueryGateModel<RegModel, RepoModel extends {[K in keyof RegModel]: any}> = {
+    [K in keyof RepoModel]: RepoModel[K]
+}
+
+export type SortingDirection = 'asc' | 'desc'
+
+export interface PaginationQueryModel extends ParsedQs {
+    searchNameTerm?: string,
+    sortBy?: string,
+    sortDirection?: SortingDirection,
+    pageNumber?: string,
+    pageSize?: string,
+}
+
+
 export type FieldError = {
     message: string;
     field: string

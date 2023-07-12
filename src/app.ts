@@ -6,7 +6,11 @@ import {connectRouter} from "./utils/routerConnect";
 
 export const app = express();
 
-env.config({ path: `.env.${process.env.NODE_ENV}` });
+if (process.env.NODE_ENV != 'production') {
+    env.config({ path: `.env.development` });
+} else {
+    env.config();
+}
 
 app.use(express.json())
 

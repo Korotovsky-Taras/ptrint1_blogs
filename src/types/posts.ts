@@ -1,4 +1,5 @@
 import {WithId} from "mongodb";
+import {WithPagination, WithPaginationQuery} from "./custom";
 
 export type Post = {
     title: string,
@@ -16,3 +17,9 @@ export type PostsCreateModel = Pick<Post, 'title' | 'shortDescription' | 'conten
 export type PostsUpdateModel = Pick<Post, 'title' | 'shortDescription' | 'content' | 'blogId'>;
 
 export type PostViewModel = Pick<Post, 'title' | 'shortDescription' | 'content' | 'blogId' | 'blogName' | 'createdAt'> & {id: string}
+
+export type PostsListMongoModel = WithPagination<PostMongoModel>
+
+export type PostsListViewModel = WithPagination<PostViewModel>
+
+export type PostPaginationRepositoryModel = WithPaginationQuery

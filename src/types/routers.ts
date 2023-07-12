@@ -3,7 +3,9 @@ import {NextFunction, Request, Response} from "express";
 export interface IBlogsRouterController {
     getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
     createBlog(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    createBlogPost(req: Request, res: Response, next: NextFunction): Promise<Response>,
     getBlog(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    getBlogPosts(req: Request, res: Response, next: NextFunction): Promise<Response>,
     updateBlog(req: Request, res: Response, next: NextFunction): Promise<Response>,
     deleteBlog(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }

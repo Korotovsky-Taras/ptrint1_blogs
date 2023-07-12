@@ -1,4 +1,13 @@
-import {BlogViewModel, Post, PostMongoModel, PostsCreateModel, PostsUpdateModel, PostViewModel} from "../types";
+import {
+    BlogViewModel,
+    Post,
+    PostMongoModel,
+    PostPaginationRepositoryModel,
+    PostsCreateModel,
+    PostsListViewModel,
+    PostsUpdateModel,
+    PostViewModel
+} from "../types";
 import {blogsRepository} from "./blogs-repository";
 import {withMongoLogger} from "../utils/withMongoLogger";
 import {postsCollection} from "../db";
@@ -6,10 +15,24 @@ import {ObjectId} from "mongodb";
 import {PostsDto} from "../dto/posts.dto";
 
 export const postsRepository = {
-    async getPosts(): Promise<PostViewModel[]> {
-        return withMongoLogger<PostViewModel[]>(async () => {
-            const posts: PostMongoModel[] = await postsCollection.find({}).toArray();
-            return PostsDto.allPosts(posts);
+    async getPosts(filter: Partial<PostMongoModel>, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
+        return withMongoLogger<PostsListViewModel>(async () => {
+
+            const totalCount: number = await postsCollection.countDocuments();
+            const items: PostMongoModel[] = await postsCollection.find(filter)
+                .sort({[query.sortBy]: query.sortDirection })
+                .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
+                .limit(query.pageSize)
+                .toArray();
+
+
+            return PostsDto.allPosts({
+                pagesCount: Math.ceil(items.length/query.pageSize),
+                page: query.pageNumber,
+                pageSize: query.pageSize,
+                totalCount,
+                items,
+            });
         });
     },
     async createPost(input: PostsCreateModel): Promise<PostViewModel | null> {

@@ -1,22 +1,28 @@
-import {NextFunction, Request, Response} from "express";
+import {NextFunction, Response} from "express";
 import {postsRepository} from "../repositories";
 import {
     IPostsRouterController,
+    PaginationQueryModel,
     ParamIdModel,
+    PostPaginationRepositoryModel,
     PostsCreateModel,
+    PostsListViewModel,
     PostsUpdateModel,
     PostViewModel,
     RequestWithBody,
     RequestWithParams,
     RequestWithParamsBody,
+    RequestWithQuery,
     Status
 } from "../types";
+import {PostsDto} from "../dto/posts.dto";
 
 
 export class PostsRouterController implements IPostsRouterController {
 
-    async getAll(req: Request, res: Response<PostViewModel[]>, next: NextFunction) {
-        const posts: PostViewModel[] = await postsRepository.getPosts();
+    async getAll(req: RequestWithQuery<PaginationQueryModel>, res: Response<PostsListViewModel>, next: NextFunction) {
+        const query: PostPaginationRepositoryModel = PostsDto.toRepoQuery(req.query);
+        const posts: PostsListViewModel = await postsRepository.getPosts({}, query);
         return res.status(Status.OK).send(posts);
     }
 

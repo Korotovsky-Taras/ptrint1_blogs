@@ -2,6 +2,7 @@ import {BlogsRouterController} from "../controllers/BlogsRouterController";
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
 import {blogsCreationValidator} from "../middlewares/blogs-validation";
 import {Route, RouterMethod} from "../types";
+import {postCreationValidator} from "../middlewares/posts-validation";
 
 
 export const blogsRouterController = new BlogsRouterController();
@@ -18,6 +19,24 @@ const blogSingleRoute: Route<BlogsRouterController> = {
     method: RouterMethod.GET,
     controller: blogsRouterController,
     action: 'getBlog',
+}
+
+const blogPostsRoute: Route<BlogsRouterController> = {
+    route: "/blogs/:id/posts",
+    method: RouterMethod.GET,
+    controller: blogsRouterController,
+    action: 'getBlogPosts',
+}
+
+const blogPostCreationRoute: Route<BlogsRouterController> = {
+    route: "/blogs/:id/posts",
+    method: RouterMethod.POST,
+    controller: blogsRouterController,
+    action: 'createBlogPost',
+    middlewares: [
+        authBasicValidation,
+        postCreationValidator
+    ]
 }
 
 const blogSingleUpdateRoute: Route<BlogsRouterController> = {
@@ -55,6 +74,8 @@ const blogsDeletingRoute: Route<BlogsRouterController> = {
 export const blogRoutes: Route<BlogsRouterController>[] = [
     blogsRoute,
     blogSingleRoute,
+    blogPostsRoute,
+    blogPostCreationRoute,
     blogsCreationRoute,
     blogsDeletingRoute,
     blogSingleUpdateRoute,
