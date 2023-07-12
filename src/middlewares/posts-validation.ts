@@ -47,12 +47,11 @@ export const postCreationValidator = withValidator(() => {
 })
 export const postUpdateWithIdValidator = withValidator(() => {
     return [
-        ...postCreationValidator,
         checkSchema({
             blogId: {
                 in: ['body'],
                 trim: true,
-                isString: {
+                isMongoId: {
                     errorMessage: "should be a string",
                 },
                 isLength: {
@@ -61,20 +60,33 @@ export const postUpdateWithIdValidator = withValidator(() => {
                 },
             }
         }),
+        ...postCreationValidator,
     ]
 })
 
 export const postCreationWithIdValidator = withValidator(() => {
     return [
-        ...postUpdateWithIdValidator,
         checkSchema({
             blogId: {
                 in: ['body'],
+                trim: true,
+                isMongoId: {
+                    errorMessage: "wrong id type",
+                },
                 custom: {
-                    options: (blogId) => blogsRepository.findBlogById(blogId),
-                    errorMessage: "wrong id",
+                    options: async (blogId) => {
+                        const res = await blogsRepository.findBlogById(blogId);
+                        if (res === null) {
+                            throw Error("blog is not exist")
+                        }
+                    },
+                },
+                isLength: {
+                    options: {min: 1},
+                    errorMessage: "length should be > 0"
                 },
             }
         }),
+        ...postUpdateWithIdValidator,
     ]
 })
