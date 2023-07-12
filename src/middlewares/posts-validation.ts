@@ -52,11 +52,15 @@ export const postUpdateWithIdValidator = withValidator(() => {
                 in: ['body'],
                 trim: true,
                 isMongoId: {
-                    errorMessage: "should be a string",
+                    errorMessage: "wrong id type",
                 },
-                isLength: {
-                    options: {min: 1},
-                    errorMessage: "length should be > 0"
+                custom: {
+                    options: async (blogId) => {
+                        const res = await blogsRepository.findBlogById(blogId);
+                        if (res === null) {
+                            throw Error("blog is not exist")
+                        }
+                    },
                 },
             }
         }),
@@ -87,6 +91,6 @@ export const postCreationWithIdValidator = withValidator(() => {
                 },
             }
         }),
-        ...postUpdateWithIdValidator,
+        ...postCreationValidator,
     ]
 })
