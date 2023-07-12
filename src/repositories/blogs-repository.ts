@@ -29,7 +29,7 @@ export const blogsRepository = {
                 .toArray();
 
             return BlogsDto.allBlogs({
-                pagesCount: Math.ceil(totalCount/query.pageSize),
+                pagesCount: Math.ceil(items.length/query.pageSize),
                 page: query.pageNumber,
                 pageSize: query.pageSize,
                 totalCount,
