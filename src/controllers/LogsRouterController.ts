@@ -8,7 +8,7 @@ export class LogsRouterController implements ILogsRouterController {
         try {
             const logs: Log[] = await logsRepository.getAll();
             return res.status(Status.OK).send(logs);
-        } catch (e) {
+        } catch (e :any) {
             return res.status(Status.BAD_REQUEST).send(e);
         }
     }
@@ -16,8 +16,8 @@ export class LogsRouterController implements ILogsRouterController {
         try {
             await logsRepository.deleteAll();
             return res.sendStatus(Status.NO_CONTENT);
-        } catch (e) {
-            return res.status(Status.BAD_REQUEST).send(e);
+        } catch (e :any) {
+            return res.status(Status.BAD_REQUEST).send(e.toString());
         }
     }
 }
