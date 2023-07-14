@@ -5,11 +5,19 @@ import {logsRepository} from "../repositories/logs-repository";
 
 export class LogsRouterController implements ILogsRouterController {
     async getAll(req: Request, res: Response<Log[]>) {
-        const logs: Log[] = await logsRepository.getAll();
-        return res.status(Status.OK).send(logs);
+        try {
+            const logs: Log[] = await logsRepository.getAll();
+            return res.status(Status.OK).send(logs);
+        } catch (e) {
+            return res.status(Status.BAD_REQUEST).send(e);
+        }
     }
     async deleteAll(req: Request, res: Response) {
-        await logsRepository.deleteAll();
-        return res.sendStatus(Status.NO_CONTENT);
+        try {
+            await logsRepository.deleteAll();
+            return res.sendStatus(Status.NO_CONTENT);
+        } catch (e) {
+            return res.status(Status.BAD_REQUEST).send(e);
+        }
     }
 }

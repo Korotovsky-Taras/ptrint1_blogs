@@ -5,7 +5,7 @@ import path from "path";
 
 const dateSpliterator = "$$$";
 const logSpliterator = '\r\n';
-export const logsPath = path.resolve(process.cwd(), 'logs', 'mongo.txt');
+export const logsPath = path.join(process.cwd(), 'logs', 'mongo.txt');
 
 const logNormalize = (log: string): Log => {
     const [date, message] = log.includes(dateSpliterator) ? log.split(dateSpliterator) : ["", log];
