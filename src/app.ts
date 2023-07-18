@@ -1,10 +1,10 @@
-import express from "express";
+import express, {Express} from "express";
 import errorHandling from "./middlewares/error-handling";
 import env from "dotenv";
 import {blogRoutes, logsRoutes, postsRoutes, testingRoutes} from "./routes";
 import {connectRouter} from "./utils/routerConnect";
 
-export const app = express();
+export const app: Express = express();
 
 if (process.env.NODE_ENV != 'production') {
     env.config({ path: `.env.development` });

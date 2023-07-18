@@ -8,7 +8,6 @@ import {
     PostsUpdateModel,
     PostViewModel
 } from "../types";
-import {blogsRepository} from "./blogs-repository";
 import {withMongoLogger} from "../utils/withMongoLogger";
 import {postsCollection} from "../db";
 import {ObjectId} from "mongodb";
@@ -37,25 +36,21 @@ export const postsRepository = {
             });
         });
     },
-    async createPost(input: PostsCreateModel): Promise<PostViewModel | null> {
-        return withMongoLogger<PostViewModel | null>(async () => {
-            const blog: BlogViewModel | null = await blogsRepository.findBlogById(input.blogId)
-            if (blog) {
-                const newPost: Post = {
-                    title: input.title,
-                    shortDescription: input.shortDescription,
-                    content: input.content,
-                    blogId: blog.id,
-                    blogName: blog.name,
-                    createdAt: (new Date()).toISOString(),
-                }
-                const res = await postsCollection.insertOne(newPost);
-                return PostsDto.post({
-                    _id: res.insertedId,
-                    ...newPost,
-                });
+    async createPost(input: PostsCreateModel, blog: BlogViewModel): Promise<PostViewModel> {
+        return withMongoLogger<PostViewModel>(async () => {
+            const newPost: Post = {
+                title: input.title,
+                shortDescription: input.shortDescription,
+                content: input.content,
+                blogId: blog.id,
+                blogName: blog.name,
+                createdAt: (new Date()).toISOString(),
             }
-            return null;
+            const res = await postsCollection.insertOne(newPost);
+            return PostsDto.post({
+                _id: res.insertedId,
+                ...newPost,
+            });
         });
     },
     async findPostById(id: string): Promise<PostViewModel | null> {

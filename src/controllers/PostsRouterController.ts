@@ -16,6 +16,7 @@ import {
     Status
 } from "../types";
 import {PostsDto} from "../dto/posts.dto";
+import {postsService} from "../services/PostsService";
 
 
 export class PostsRouterController implements IPostsRouterController {
@@ -26,14 +27,6 @@ export class PostsRouterController implements IPostsRouterController {
         return res.status(Status.OK).send(posts);
     }
 
-    async createPost(req: RequestWithBody<PostsCreateModel>, res: Response<PostViewModel>, next: NextFunction) {
-        const post: PostViewModel | null = await postsRepository.createPost(req.body);
-        if (post) {
-            return res.status(Status.CREATED).send(post);
-        }
-        return res.sendStatus(Status.BAD_REQUEST);
-    }
-
     async getPost(req: RequestWithParamsBody<ParamIdModel, PostsCreateModel>, res: Response<PostViewModel | null>, next: NextFunction) {
         const post: PostViewModel | null = await postsRepository.findPostById(req.params.id);
         if (post) {
@@ -42,8 +35,16 @@ export class PostsRouterController implements IPostsRouterController {
         return res.sendStatus(Status.NOT_FOUND);
     }
 
+    async createPost(req: RequestWithBody<PostsCreateModel>, res: Response<PostViewModel>, next: NextFunction) {
+        const post: PostViewModel | null = await postsService.createPost(req.body);
+        if (post) {
+            return res.status(Status.CREATED).send(post);
+        }
+        return res.sendStatus(Status.BAD_REQUEST);
+    }
+
     async updatePost(req: RequestWithParamsBody<ParamIdModel, PostsUpdateModel>, res: Response, next: NextFunction) {
-        const post = await postsRepository.updatePostById(req.params.id, req.body);
+        const post = await postsService.updatePostById(req.params.id, req.body);
         if (post) {
             return res.sendStatus(Status.NO_CONTENT);
         }
@@ -51,7 +52,7 @@ export class PostsRouterController implements IPostsRouterController {
     }
 
     async deletePost(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        const isDeleted = await postsRepository.deletePostById(req.params.id);
+        const isDeleted = await postsService.deletePostById(req.params.id);
         if (isDeleted) {
             return res.sendStatus(Status.NO_CONTENT);
         }

@@ -59,8 +59,7 @@ export const blogsRepository = {
         return withMongoLogger<PostsListViewModel | null>(async () => {
             const blog: BlogMongoModel | null = await blogsCollection.findOne({_id: new ObjectId(id)})
             if (blog) {
-                const model: PostsListViewModel = await postsRepository.getPosts({blogId: id}, query);
-                return model;
+                return postsRepository.getPosts({blogId: id}, query);
             }
             return null;
         })
