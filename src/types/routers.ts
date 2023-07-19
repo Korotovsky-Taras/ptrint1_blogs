@@ -10,7 +10,6 @@ export interface IBlogsRouterController {
     deleteBlog(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
 
-
 export interface ITestingRouterController {
     clearAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
@@ -26,4 +25,14 @@ export interface IPostsRouterController {
 export interface ILogsRouterController {
     getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
     deleteAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+}
+
+export interface IAuthRouterController {
+    login(req: Request, res: Response, next: NextFunction): Promise<Response>,
+}
+
+export interface IUsersRouterController {
+    getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    createUser(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    deleteUser(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }

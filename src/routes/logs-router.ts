@@ -1,23 +1,21 @@
-import {Route, RouterMethod} from "../types";
-import {LogsRouterController} from "../controllers/LogsRouterController";
+import {ILogsRouterController, Route, RouterMethod} from "../types";
+import {logsRouterController} from "../controllers/LogsRouterController";
 
-export const logsRouterController = new LogsRouterController();
-
-export const logsRoute: Route<LogsRouterController> = {
+export const logsRoute: Route<ILogsRouterController> = {
     route: "/logs",
     method: RouterMethod.GET,
     controller: logsRouterController,
     action: 'getAll',
 }
 
-export const clearLogsRoute: Route<LogsRouterController> = {
+export const clearLogsRoute: Route<ILogsRouterController> = {
     route: "/logs",
     method: RouterMethod.DELETE,
     controller: logsRouterController,
     action: 'deleteAll',
 }
 
-export const logsRoutes: Route<LogsRouterController>[] = [
+export const logsRoutes: Route<ILogsRouterController>[] = [
     logsRoute,
     clearLogsRoute,
 ];

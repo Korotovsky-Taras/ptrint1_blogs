@@ -1,15 +1,14 @@
 import {
-    PaginationQueryModel,
     PostMongoModel,
+    PostPaginationQueryModel,
     PostPaginationRepositoryModel,
     PostsListMongoModel,
     PostsListViewModel,
-    PostViewModel,
-    QueryGateModel
+    PostViewModel
 } from "../types";
 import {withExternalDirection, withExternalNumber, withExternalString,} from "../utils/withExternalQuery";
 
-const initialQuery: QueryGateModel<PaginationQueryModel, PostPaginationRepositoryModel> = {
+const initialQuery: PostPaginationRepositoryModel = {
     sortBy: "createdAt",
     sortDirection: "desc",
     pageNumber: 1,
@@ -23,16 +22,8 @@ export const PostsDto = {
             page: list.page,
             pageSize: list.pageSize,
             totalCount: list.totalCount,
-            items: list.items.map(this.post)
+            items: list.items.map(PostsDto.post)
         }
-    },
-    toRepoQuery(query: PaginationQueryModel): PostPaginationRepositoryModel {
-        return {
-            sortBy: withExternalString(initialQuery.sortBy, query.sortBy),
-            sortDirection: withExternalDirection(initialQuery.sortDirection, query.sortDirection),
-            pageNumber: withExternalNumber(initialQuery.pageNumber, query.pageNumber),
-            pageSize: withExternalNumber(initialQuery.pageSize, query.pageSize)
-        };
     },
     post({ _id, title, shortDescription, content, blogId, blogName, createdAt }: PostMongoModel): PostViewModel {
         return {
@@ -44,5 +35,13 @@ export const PostsDto = {
             blogName,
             createdAt,
         }
-    }
+    },
+    toRepoQuery(query: PostPaginationQueryModel): PostPaginationRepositoryModel {
+        return {
+            sortBy: withExternalString(initialQuery.sortBy, query.sortBy),
+            sortDirection: withExternalDirection(initialQuery.sortDirection, query.sortDirection),
+            pageNumber: withExternalNumber(initialQuery.pageNumber, query.pageNumber),
+            pageSize: withExternalNumber(initialQuery.pageSize, query.pageSize)
+        };
+    },
 }

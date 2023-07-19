@@ -1,16 +1,17 @@
 import {Response} from "express";
-import {blogsRepository} from "../repositories";
+import {blogsRepository, postsRepository} from "../repositories";
 
 import {
     BlogCreateModel,
     BlogListViewModel,
-    BlogPaginationRepositoryModel,
+    BlogPaginationQueryModel,
     BlogPostCreateModel,
     BlogUpdateModel,
     BlogViewModel,
     IBlogsRouterController,
-    PaginationQueryModel,
     ParamIdModel,
+    PostPaginationQueryModel,
+    PostPaginationRepositoryModel,
     PostsListViewModel,
     PostViewModel,
     RequestWithBody,
@@ -22,13 +23,13 @@ import {
 } from "../types";
 import {BlogsDto} from "../dto/blogs.dto";
 import {blogsService} from "../services/BlogsService";
+import {PostsDto} from "../dto/posts.dto";
 
 
-export class BlogsRouterController implements IBlogsRouterController {
+class BlogsRouterController implements IBlogsRouterController {
 
-    async getAll(req: RequestWithQuery<PaginationQueryModel>, res: Response<BlogListViewModel>) {
-        const query: BlogPaginationRepositoryModel = BlogsDto.toRepoQuery(req.query);
-        const model: BlogListViewModel = await blogsRepository.getBlogs(query);
+    async getAll(req: RequestWithQuery<BlogPaginationQueryModel>, res: Response<BlogListViewModel>) {
+        const model: BlogListViewModel = await blogsRepository.getBlogs(BlogsDto.toRepoQuery(req.query));
         return res.status(Status.OK).send(model);
     }
 
@@ -45,10 +46,12 @@ export class BlogsRouterController implements IBlogsRouterController {
         return res.status(Status.CREATED).send(blog);
     }
 
-    async getBlogPosts(req: RequestWithParamsQuery<ParamIdModel, PaginationQueryModel>, res: Response<PostsListViewModel>) {
-        const query: BlogPaginationRepositoryModel = BlogsDto.toRepoQuery(req.query);
-        const model: PostsListViewModel | null = await blogsRepository.findBlogPosts(req.params.id, query);
-        if (model) {
+    async getBlogPosts(req: RequestWithParamsQuery<ParamIdModel, PostPaginationQueryModel>, res: Response<PostsListViewModel>) {
+        const {id} = req.params;
+        const blog: BlogViewModel | null = await blogsRepository.findBlogById(id)
+        if (blog) {
+            const query: PostPaginationRepositoryModel = PostsDto.toRepoQuery(req.query);
+            const model: PostsListViewModel =  await postsRepository.getPosts({blogId: id}, query);
             return res.status(Status.OK).send(model);
         }
         return res.sendStatus(Status.NOT_FOUND);
@@ -82,3 +85,5 @@ export class BlogsRouterController implements IBlogsRouterController {
         return res.sendStatus(Status.NOT_FOUND);
     }
 }
+
+export const blogsRouterController = new BlogsRouterController();

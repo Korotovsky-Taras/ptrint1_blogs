@@ -3,7 +3,7 @@ import {ILogsRouterController, Log, Status} from "../types";
 import {logsRepository} from "../repositories/logs-repository";
 
 
-export class LogsRouterController implements ILogsRouterController {
+class LogsRouterController implements ILogsRouterController {
     async getAll(req: Request, res: Response<Log[]>) {
         try {
             const logs: Log[] = await logsRepository.getAll();
@@ -21,3 +21,5 @@ export class LogsRouterController implements ILogsRouterController {
         }
     }
 }
+
+export const logsRouterController = new LogsRouterController();

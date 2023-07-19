@@ -22,8 +22,8 @@ export type ParamIdModel = {
     id: string
 }
 
-export type WithPaginationQuery = {
-    sortBy: string,
+export type WithPaginationQuery<T> = {
+    sortBy: Extract<keyof T, string>,
     sortDirection: SortingDirection,
     pageNumber: number,
     pageSize: number
@@ -46,9 +46,8 @@ export type QueryGateModel<RegModel, RepoModel extends {[K in keyof RegModel]: a
 
 export type SortingDirection = "asc" | "desc";
 
-export interface PaginationQueryModel extends ParsedQs {
-    searchNameTerm?: string,
-    sortBy?: string,
+export interface PaginationQueryModel<T extends object> extends ParsedQs {
+    sortBy?: Extract<keyof T, string>,
     sortDirection?: string,
     pageNumber?: string,
     pageSize?: string,

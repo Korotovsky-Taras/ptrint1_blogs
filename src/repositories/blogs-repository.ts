@@ -5,14 +5,13 @@ import {
     BlogMongoModel,
     BlogPaginationRepositoryModel,
     BlogUpdateModel,
-    BlogViewModel,
-    PostsListViewModel
+    BlogViewModel
 } from "../types";
 import {blogsCollection} from "../db";
 import {withMongoLogger} from "../utils/withMongoLogger";
 import {ObjectId} from "mongodb";
 import {BlogsDto} from "../dto/blogs.dto";
-import {postsRepository} from "./posts-repository";
+import {withMongoQueryFilterPagination} from "./utils";
 
 
 export const blogsRepository = {
@@ -24,21 +23,7 @@ export const blogsRepository = {
                 filter.name = {$regex: query.searchNameTerm, $options: "i" }
             }
 
-            const totalCount: number = await blogsCollection.countDocuments(filter)
-
-            const items: BlogMongoModel[] = await blogsCollection.find(filter)
-                .sort(query.sortBy, query.sortDirection)
-                .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
-                .limit(query.pageSize)
-                .toArray();
-
-            return BlogsDto.allBlogs({
-                pagesCount: Math.ceil(totalCount/query.pageSize),
-                page: query.pageNumber,
-                pageSize: query.pageSize,
-                totalCount,
-                items,
-            });
+            return withMongoQueryFilterPagination<Blog, BlogViewModel>(blogsCollection, BlogsDto.allBlogs, filter, query)
         })
     },
     async createBlog(input: BlogCreateModel): Promise<BlogViewModel> {
@@ -53,15 +38,6 @@ export const blogsRepository = {
                 _id: res.insertedId,
                 ...newBlog,
             });
-        })
-    },
-    async findBlogPosts(id: string, query: BlogPaginationRepositoryModel): Promise<PostsListViewModel | null> {
-        return withMongoLogger<PostsListViewModel | null>(async () => {
-            const blog: BlogMongoModel | null = await blogsCollection.findOne({_id: new ObjectId(id)})
-            if (blog) {
-                return postsRepository.getPosts({blogId: id}, query);
-            }
-            return null;
         })
     },
     async findBlogById(id: string): Promise<BlogViewModel | null> {

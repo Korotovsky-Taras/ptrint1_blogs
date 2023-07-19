@@ -1,5 +1,5 @@
 import {EnhancedOmit, WithId} from "mongodb";
-import {WithPagination, WithPaginationQuery} from "./custom";
+import {PaginationQueryModel, WithPagination, WithPaginationQuery} from "./custom";
 import {Post} from "./posts";
 
 export type Blog = {
@@ -24,7 +24,11 @@ export type BlogListMongoModel = WithPagination<BlogMongoModel>
 
 export type BlogListViewModel = WithPagination<BlogViewModel>
 
-export type BlogPaginationRepositoryModel = EnhancedOmit<WithPaginationQuery, "searchNameTerm"> & {
+export type BlogPaginationQueryModel = PaginationQueryModel<Blog> & {
+    searchNameTerm?: string,
+}
+
+export type BlogPaginationRepositoryModel = EnhancedOmit<WithPaginationQuery<Blog>, "searchNameTerm"> & {
     searchNameTerm: string | null,
 }
 

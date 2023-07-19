@@ -1,7 +1,5 @@
-import {TestingRouterController} from "../controllers/TestingRouterController";
+import {testingRouterController} from "../controllers/TestingRouterController";
 import {ITestingRouterController, Route, RouterMethod} from "../types";
-
-const testingRouterController = new TestingRouterController();
 
 const testingRoute: Route<ITestingRouterController> = {
     route: "/testing/all-data",

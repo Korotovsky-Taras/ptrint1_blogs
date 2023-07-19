@@ -1,10 +1,10 @@
 import {SortingDirection} from "../types";
 
-export function withExternalString(initialValue: string, externalValue: string | undefined) : string {
+export function withExternalString<T>(initialValue: T, externalValue: T | undefined) : T {
     if (externalValue === undefined) {
         return initialValue
     }
-    return externalValue;
+    return externalValue as T;
 }
 
 export function withExternalTerm(initialValue: string | null, externalValue: string | undefined) : string | null {

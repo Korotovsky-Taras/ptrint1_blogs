@@ -1,26 +1,24 @@
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
-import {PostsRouterController} from "../controllers/PostsRouterController";
+import {postsRouterController} from "../controllers/PostsRouterController";
 import {postCreationWithIdValidator, postUpdateWithIdValidator} from "../middlewares/posts-validation";
 import {IPostsRouterController, Route, RouterMethod} from "../types";
 
 
-const postsRouterController = new PostsRouterController();
-
-const postsRoute: Route<PostsRouterController> = {
+const postsRoute: Route<IPostsRouterController> = {
     route: "/posts",
     method: RouterMethod.GET,
     controller: postsRouterController,
     action: 'getAll',
 }
 
-const postSingleRoute: Route<PostsRouterController> = {
+const postSingleRoute: Route<IPostsRouterController> = {
     route: "/posts/:id",
     method: RouterMethod.GET,
     controller: postsRouterController,
     action: 'getPost',
 }
 
-const postSingleUpdateRoute: Route<PostsRouterController> = {
+const postSingleUpdateRoute: Route<IPostsRouterController> = {
     route: "/posts/:id",
     method: RouterMethod.PUT,
     controller: postsRouterController,
@@ -31,7 +29,7 @@ const postSingleUpdateRoute: Route<PostsRouterController> = {
     ]
 }
 
-const postsCreationRoute: Route<PostsRouterController> = {
+const postsCreationRoute: Route<IPostsRouterController> = {
     route: "/posts",
     method: RouterMethod.POST,
     controller: postsRouterController,
@@ -42,7 +40,7 @@ const postsCreationRoute: Route<PostsRouterController> = {
     ]
 }
 
-const postsDeletingRoute: Route<PostsRouterController> = {
+const postsDeletingRoute: Route<IPostsRouterController> = {
     route: "/posts/:id",
     method: RouterMethod.DELETE,
     controller: postsRouterController,

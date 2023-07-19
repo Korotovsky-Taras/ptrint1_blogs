@@ -4,7 +4,7 @@ import {
     IPostsRouterController,
     PaginationQueryModel,
     ParamIdModel,
-    PostPaginationRepositoryModel,
+    Post,
     PostsCreateModel,
     PostsListViewModel,
     PostsUpdateModel,
@@ -19,11 +19,10 @@ import {PostsDto} from "../dto/posts.dto";
 import {postsService} from "../services/PostsService";
 
 
-export class PostsRouterController implements IPostsRouterController {
+class PostsRouterController implements IPostsRouterController {
 
-    async getAll(req: RequestWithQuery<PaginationQueryModel>, res: Response<PostsListViewModel>, next: NextFunction) {
-        const query: PostPaginationRepositoryModel = PostsDto.toRepoQuery(req.query);
-        const posts: PostsListViewModel = await postsRepository.getPosts({}, query);
+    async getAll(req: RequestWithQuery<PaginationQueryModel<Post>>, res: Response<PostsListViewModel>, next: NextFunction) {
+        const posts: PostsListViewModel = await postsRepository.getPosts({}, PostsDto.toRepoQuery(req.query));
         return res.status(Status.OK).send(posts);
     }
 
@@ -59,3 +58,5 @@ export class PostsRouterController implements IPostsRouterController {
         return res.sendStatus(Status.NOT_FOUND);
     }
 }
+
+export const postsRouterController = new PostsRouterController();

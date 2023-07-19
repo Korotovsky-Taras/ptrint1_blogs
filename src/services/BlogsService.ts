@@ -1,12 +1,12 @@
-import {BlogCreateModel, BlogPostCreateModel, BlogUpdateModel, BlogViewModel, PostViewModel} from "../types";
+import {
+    BlogCreateModel,
+    BlogPostCreateModel,
+    BlogUpdateModel,
+    BlogViewModel,
+    IBlogService,
+    PostViewModel
+} from "../types";
 import {blogsRepository, postsRepository} from "../repositories";
-
-interface IBlogService {
-    createBlog(model: BlogCreateModel): Promise<BlogViewModel>
-    createPost(blogId: string, model: BlogPostCreateModel): Promise<PostViewModel | null>
-    updateBlogById(blogId: string, model: BlogUpdateModel): Promise<boolean>
-    deleteBlogById(blogId: string): Promise<boolean>
-}
 
 class BlogsService implements IBlogService {
     async createBlog(model: BlogCreateModel): Promise<BlogViewModel> {

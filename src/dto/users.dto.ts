@@ -1,10 +1,10 @@
 import {
-    BlogListMongoModel,
-    BlogListViewModel,
-    BlogMongoModel,
-    BlogPaginationQueryModel,
-    BlogPaginationRepositoryModel,
-    BlogViewModel
+    UserListMongoModel,
+    UserListViewModel,
+    UserMongoModel,
+    UserPaginationQueryModel,
+    UserPaginationRepositoryModel,
+    UserViewModel
 } from "../types";
 import {
     withExternalDirection,
@@ -13,38 +13,38 @@ import {
     withExternalTerm,
 } from "../utils/withExternalQuery";
 
-const initialQuery: BlogPaginationRepositoryModel = {
+const initialQuery: UserPaginationRepositoryModel = {
     sortBy: "createdAt",
-    searchNameTerm: null,
+    searchEmailTerm: null,
+    searchLoginTerm: null,
     sortDirection: "desc",
     pageNumber: 1,
     pageSize: 10
 }
 
-export const BlogsDto = {
-    allBlogs(list: BlogListMongoModel): BlogListViewModel {
+export const UsersDto = {
+    allUsers(list: UserListMongoModel): UserListViewModel {
         return {
             pagesCount: list.pagesCount,
             page: list.page,
             pageSize: list.pageSize,
             totalCount: list.totalCount,
-            items: list.items.map(BlogsDto.blog)
+            items: list.items.map(UsersDto.user)
         }
     },
-    blog({_id, name, description, websiteUrl, createdAt, isMembership}: BlogMongoModel): BlogViewModel {
+    user({_id, login, email, createdAt}: UserMongoModel): UserViewModel {
         return {
             id: _id.toString(),
-            name,
-            description,
-            websiteUrl,
+            login,
+            email,
             createdAt,
-            isMembership,
         }
     },
-    toRepoQuery(query: BlogPaginationQueryModel): BlogPaginationRepositoryModel {
+    toRepoQuery(query: UserPaginationQueryModel): UserPaginationRepositoryModel {
         return {
+            searchLoginTerm: withExternalTerm(initialQuery.searchLoginTerm, query.searchLoginTerm),
+            searchEmailTerm: withExternalTerm(initialQuery.searchEmailTerm, query.searchEmailTerm),
             sortBy: withExternalString(initialQuery.sortBy, query.sortBy),
-            searchNameTerm: withExternalTerm(initialQuery.searchNameTerm, query.searchNameTerm),
             sortDirection: withExternalDirection(initialQuery.sortDirection, query.sortDirection),
             pageNumber: withExternalNumber(initialQuery.pageNumber, query.pageNumber),
             pageSize: withExternalNumber(initialQuery.pageSize, query.pageSize)

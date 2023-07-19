@@ -12,28 +12,12 @@ import {withMongoLogger} from "../utils/withMongoLogger";
 import {postsCollection} from "../db";
 import {ObjectId} from "mongodb";
 import {PostsDto} from "../dto/posts.dto";
+import {withMongoQueryFilterPagination} from "./utils/";
 
 export const postsRepository = {
     async getPosts(filter: Partial<PostMongoModel>, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
         return withMongoLogger<PostsListViewModel>(async () => {
-
-
-            const totalCount: number = await postsCollection.countDocuments(filter)
-
-            const items: PostMongoModel[] = await postsCollection.find(filter)
-                .sort(query.sortBy, query.sortDirection)
-                .skip(Math.max(query.pageNumber - 1, 0) * query.pageSize)
-                .limit(query.pageSize)
-                .toArray();
-
-
-            return PostsDto.allPosts({
-                pagesCount: Math.ceil(totalCount/query.pageSize),
-                page: query.pageNumber,
-                pageSize: query.pageSize,
-                totalCount,
-                items,
-            });
+            return withMongoQueryFilterPagination<Post, PostViewModel>(postsCollection, PostsDto.allPosts, filter, query);
         });
     },
     async createPost(input: PostsCreateModel, blog: BlogViewModel): Promise<PostViewModel> {
