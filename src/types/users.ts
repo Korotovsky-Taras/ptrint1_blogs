@@ -33,7 +33,3 @@ export type UserPaginationRepositoryModel = EnhancedOmit<WithPaginationQuery<Use
     searchLoginTerm: string | null,
     searchEmailTerm: string | null,
 }
-
-export type UserSearchFilter = {
-
-}

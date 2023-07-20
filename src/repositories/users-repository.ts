@@ -20,11 +20,14 @@ export const usersRepository = {
         return withMongoLogger<UserListViewModel>(async () => {
 
             let filter: any = {};
-            if (query.searchEmailTerm != null) {
-                filter.email = {$regex: query.searchEmailTerm, $options: "i" }
-            }
-            if (query.searchLoginTerm != null) {
-                filter.login = {$regex: query.searchLoginTerm, $options: "i" }
+            const searchLoginTermFilter = {login: {$regex: query.searchLoginTerm, $options: "i" }};
+            const searchEmailTermFilter = {email: {$regex: query.searchEmailTerm, $options: "i" }};
+            if (query.searchEmailTerm != null && query.searchLoginTerm != null) {
+                filter = {$or: [searchEmailTermFilter, searchLoginTermFilter]}
+            } else if (query.searchLoginTerm != null) {
+                filter = searchLoginTermFilter
+            } else if (query.searchEmailTerm != null) {
+                filter = searchEmailTermFilter
             }
 
             return withMongoQueryFilterPagination<User, UserViewModel>(usersCollection, UsersDto.allUsers, filter, query);
@@ -69,6 +72,11 @@ export const usersRepository = {
             return false;
         });
     },
+    async clear(): Promise<void> {
+        return withMongoLogger<void>(async () => {
+            await usersCollection.deleteMany({});
+        })
+    },
     _hashPassword(password: string) : UserEncodedPassword {
         const salt = crypto.randomBytes(16).toString('hex');
         const hash = usersRepository._createPasswordHash(password, salt);
@@ -81,5 +89,4 @@ export const usersRepository = {
     _createPasswordHash(password: string, salt: string): string {
         return crypto.pbkdf2Sync(password, salt, 100, 24, 'sha512').toString('hex');
     },
-
 }
