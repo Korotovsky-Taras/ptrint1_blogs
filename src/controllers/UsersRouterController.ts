@@ -1,7 +1,19 @@
-import {IUsersRouterController, RequestWithQuery, Status, UserListViewModel, UserPaginationQueryModel} from "../types";
-import {NextFunction, Request, Response} from "express";
+import {
+    IUsersRouterController,
+    ParamIdModel,
+    RequestWithBody,
+    RequestWithParams,
+    RequestWithQuery,
+    Status,
+    UserCreateModel,
+    UserListViewModel,
+    UserPaginationQueryModel,
+    UserViewModel
+} from "../types";
+import {NextFunction, Response} from "express";
 import {usersRepository} from "../repositories/users-repository";
 import {UsersDto} from "../dto/users.dto";
+import {userService} from "../services/UsersService";
 
 
 class UsersRouterController implements IUsersRouterController {
@@ -9,11 +21,19 @@ class UsersRouterController implements IUsersRouterController {
         const users: UserListViewModel = await usersRepository.getAll(UsersDto.toRepoQuery(req.query))
         return res.status(Status.OK).send(users);
     }
-    async createUser(req: Request, res: Response, next: NextFunction) {
-        return res;
+    async createUser(req: RequestWithBody<UserCreateModel>, res: Response, next: NextFunction) {
+        const user: UserViewModel | null = await userService.createUser(req.body);
+        if (user) {
+            return res.status(Status.CREATED).send(user);
+        }
+        return res.sendStatus(Status.BAD_REQUEST);
     }
-    async deleteUser(req: Request, res: Response, next: NextFunction) {
-        return res;
+    async deleteUser(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
+        const isDeleted: boolean = await userService.deleteUser(req.params.id);
+        if (isDeleted) {
+            return res.sendStatus(Status.NO_CONTENT);
+        }
+        return res.sendStatus(Status.NOT_FOUND);
     }
 }
 

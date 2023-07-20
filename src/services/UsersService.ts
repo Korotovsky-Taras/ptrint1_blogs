@@ -1,13 +1,14 @@
 import {IUsersService, UserCreateModel, UserViewModel} from "../types";
+import {usersRepository} from "../repositories/users-repository";
 
 class UsersService implements IUsersService {
 
     async createUser(model: UserCreateModel): Promise<UserViewModel | null> {
-        return Promise.resolve(null);
+        return usersRepository.createUser(model);
     }
 
-    async  deleteUser(blogId: string): Promise<boolean> {
-        return Promise.resolve(false);
+    async deleteUser(userId: string): Promise<boolean> {
+        return usersRepository.deleteUserById(userId);
     }
 
 }

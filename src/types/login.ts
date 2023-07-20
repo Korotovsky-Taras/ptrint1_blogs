@@ -1,5 +1,5 @@
 export type AuthLoginModel = {
-    loginOrPassword: string,
+    loginOrEmail: string,
     password: string,
 }
 

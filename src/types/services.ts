@@ -23,5 +23,5 @@ export interface IUsersService {
 }
 
 export interface IAuthService {
-    login(model: AuthLoginModel): Promise<null>
+    login(model: AuthLoginModel): Promise<boolean>
 }
