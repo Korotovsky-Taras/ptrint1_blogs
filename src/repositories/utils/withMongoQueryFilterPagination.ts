@@ -1,4 +1,4 @@
-import {Collection, WithId} from "mongodb";
+import {Collection, Filter, WithId} from "mongodb";
 import {WithPagination, WithPaginationQuery} from "../../types";
 import {Document} from "bson";
 
@@ -6,13 +6,13 @@ import {Document} from "bson";
  * Общий метод для получения значений по фильтру с пагинацией
  * @param collection - коллекция типа T
  * @param dto - формат вывода данных с коллекции по типу O
- * @param filter - фильтр запроса
+ * @param filter - фильтр запроса типа T
  * @param query - параметры запроса пагинации
  */
 export async function withMongoQueryFilterPagination<T extends Document,O>(
     collection: Collection<T>,
     dto: (input: WithPagination<WithId<T>>) => WithPagination<O>,
-    filter: any,
+    filter: Filter<T>,
     query: WithPaginationQuery<T>
 ) : Promise<WithPagination<O>> {
 

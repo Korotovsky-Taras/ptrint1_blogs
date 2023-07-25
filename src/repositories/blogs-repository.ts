@@ -9,7 +9,7 @@ import {
 } from "../types";
 import {blogsCollection} from "../db";
 import {withMongoLogger} from "../utils/withMongoLogger";
-import {ObjectId} from "mongodb";
+import {Filter, ObjectId} from "mongodb";
 import {BlogsDto} from "../dto/blogs.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 
@@ -18,7 +18,7 @@ export const blogsRepository = {
     async getBlogs(query: BlogPaginationRepositoryModel): Promise<BlogListViewModel> {
         return withMongoLogger<BlogListViewModel>(async () => {
 
-            let filter: any = {};
+            let filter: Filter<Blog> = {};
             if (query.searchNameTerm != null) {
                 filter.name = {$regex: query.searchNameTerm, $options: "i" }
             }

@@ -13,20 +13,25 @@ import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
 import {AuthLoginModel} from "../types/login";
-import {ObjectId} from "mongodb";
+import {Filter, ObjectId} from "mongodb";
 
 export const usersRepository = {
     async getAll(query: UserPaginationRepositoryModel): Promise<UserListViewModel> {
         return withMongoLogger<UserListViewModel>(async () => {
 
-            let filter: any = {};
-            const searchLoginTermFilter = {login: {$regex: query.searchLoginTerm, $options: "i" }};
-            const searchEmailTermFilter = {email: {$regex: query.searchEmailTerm, $options: "i" }};
-            if (query.searchEmailTerm != null && query.searchLoginTerm != null) {
+            let filter: Filter<User> = {};
+
+            const hasLoginTerm = query.searchLoginTerm != null;
+            const hasEmailTerm = query.searchEmailTerm != null;
+
+            const searchLoginTermFilter: Filter<User> = hasLoginTerm ? {login: {$regex: query.searchLoginTerm, $options: "i" }} : {};
+            const searchEmailTermFilter: Filter<User> = hasEmailTerm ? {email: {$regex: query.searchEmailTerm, $options: "i" }} : {};
+
+            if (hasLoginTerm && hasEmailTerm) {
                 filter = {$or: [searchEmailTermFilter, searchLoginTermFilter]}
-            } else if (query.searchLoginTerm != null) {
+            } else if (hasLoginTerm) {
                 filter = searchLoginTermFilter
-            } else if (query.searchEmailTerm != null) {
+            } else if (hasEmailTerm) {
                 filter = searchEmailTermFilter
             }
 
