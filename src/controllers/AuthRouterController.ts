@@ -8,7 +8,7 @@ class AuthRouterController implements IAuthRouterController {
     async login(req: RequestWithBody<AuthLoginModel>, res: Response, next: NextFunction) {
         const isAuth: boolean = await authService.login(req.body);
         if (isAuth) {
-            return res.sendStatus(Status.NO_CONTENT)
+            return res.sendStatus(Status.OK)
         }
         return res.sendStatus(Status.UNATHORIZED)
     }
