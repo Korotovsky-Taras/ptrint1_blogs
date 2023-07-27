@@ -1,7 +1,12 @@
 import {UserMongoModel} from "../types";
-import {AuthMeViewModel} from "../types/login";
+import {AuthMeViewModel, AuthTokenPass} from "../types/login";
 
 export const AuthDto = {
+    toAuthTokenPath({_id}: UserMongoModel): AuthTokenPass {
+        return {
+            userId: _id.toString(),
+        }
+    },
     user({_id, email, login}: UserMongoModel): AuthMeViewModel {
         return {
             email: email,

@@ -12,7 +12,7 @@ import {usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
-import {AuthLoginModel, AuthMeViewModel} from "../types/login";
+import {AuthLoginModel, AuthMeViewModel, AuthTokenPass} from "../types/login";
 import {Filter, ObjectId} from "mongodb";
 import {AuthDto} from "../dto/auth.dto";
 
@@ -66,13 +66,16 @@ export const usersRepository = {
             return result.deletedCount === 1;
         });
     },
-    async checkUserAuth(model: AuthLoginModel): Promise<boolean> {
-        return withMongoLogger<boolean>(async () => {
+    async checkUserAuth(model: AuthLoginModel): Promise<AuthTokenPass | null> {
+        return withMongoLogger<AuthTokenPass | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({$or: [{email: model.loginOrEmail}, {login: model.loginOrEmail}]})
             if (user) {
-                return usersRepository._verifyPassword(model.password, user.password.salt, user.password.hash)
+                const isVerified = usersRepository._verifyPassword(model.password, user.password.salt, user.password.hash);
+                if (isVerified) {
+                    return AuthDto.toAuthTokenPath(user)
+                }
             }
-            return false;
+            return null;
         });
     },
     async getAuthUserById(userId: string): Promise<AuthMeViewModel | null> {

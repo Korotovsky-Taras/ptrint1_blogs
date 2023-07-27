@@ -7,6 +7,10 @@ export type AuthTokenPass = {
     userId: string
 }
 
+export type AuthToken = {
+    token: string
+}
+
 export type AuthMeViewModel = {
     email: string,
     login: string,

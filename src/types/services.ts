@@ -1,7 +1,7 @@
 import {BlogCreateModel, BlogPostCreateModel, BlogUpdateModel, BlogViewModel} from "./blogs";
 import {PostsCommentCreateModel, PostsCreateModel, PostsUpdateModel, PostViewModel} from "./posts";
 import {UserCreateModel, UserViewModel} from "./users";
-import {AuthLoginModel, AuthMeViewModel} from "./login";
+import {AuthLoginModel, AuthMeViewModel, AuthToken} from "./login";
 import {CommentViewModel} from "./comments";
 
 export interface IBlogService {
@@ -24,7 +24,7 @@ export interface IUsersService {
 }
 
 export interface IAuthService {
-    login(model: AuthLoginModel): Promise<boolean>
+    login(model: AuthLoginModel): Promise<AuthToken | null>
     getAuthUserById(userId: string): Promise<AuthMeViewModel | null>
 }
 
