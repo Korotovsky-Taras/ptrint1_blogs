@@ -9,6 +9,10 @@ export type User = {
     createdAt: string,
 }
 
+export type WithUserId = {
+    userId: string,
+}
+
 export type UserEncodedPassword = {
     salt: string,
     hash: string

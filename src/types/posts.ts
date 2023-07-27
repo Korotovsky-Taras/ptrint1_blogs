@@ -18,6 +18,10 @@ export type PostsUpdateModel = Pick<Post, 'title' | 'shortDescription' | 'conten
 
 export type PostViewModel = Pick<Post, 'title' | 'shortDescription' | 'content' | 'blogId' | 'blogName' | 'createdAt'> & {id: string}
 
+export type PostsCommentCreateModel = {
+    content: string,
+}
+
 export type PostsListMongoModel = WithPagination<PostMongoModel>
 
 export type PostsListViewModel = WithPagination<PostViewModel>

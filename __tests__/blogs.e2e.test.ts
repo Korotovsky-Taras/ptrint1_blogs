@@ -1,21 +1,8 @@
 import supertest from "supertest";
 import {app} from "../src/app";
-import {BlogCreateModel, BlogViewModel, PostsCreateModel, PostViewModel, Status} from "../src/types";
+import {BlogViewModel, PostsCreateModel, PostViewModel, Status} from "../src/types";
+import {authBasic64, requestApp, validBlogData, validPostData} from "./utils";
 
-const requestApp = supertest(app);
-const authB64 = Buffer.from("admin:qwerty").toString("base64");
-
-const validBlogData: BlogCreateModel = {
-    name: "Taras",
-    description: "valid",
-    websiteUrl: "https://app.by"
-}
-
-const validPostData: Omit<PostsCreateModel, 'blogId'> = {
-    title: "valid title",
-    shortDescription: "valid short description",
-    content: "valid content",
-}
 
 let createdBlogId: string | null = null;
 let createdPostId: string | null = null;
@@ -67,7 +54,7 @@ describe("blogs testing", () => {
 
         const result =  await requestApp
             .get("/blogs/1")
-            .set('Authorization', 'Basic ' + authB64)
+            .set('Authorization', 'Basic ' + authBasic64)
             .expect(Status.DB_ERROR)
 
         expect(result.body?.errorsMessages).toContainEqual({
@@ -80,7 +67,7 @@ describe("blogs testing", () => {
 
         const result = await requestApp
             .post("/blogs")
-            .set('Authorization', 'Basic ' + authB64)
+            .set('Authorization', 'Basic ' + authBasic64)
             .set('Content-Type', 'application/json')
             .send(validBlogData)
             .expect(Status.CREATED);
@@ -106,7 +93,7 @@ describe("blogs testing", () => {
 
         const result = await requestApp
             .post("/posts")
-            .set('Authorization', 'Basic ' + authB64)
+            .set('Authorization', 'Basic ' + authBasic64)
             .set('Content-Type', 'application/json')
             .send({
                 ...validPostData,
@@ -138,7 +125,7 @@ describe("blogs testing", () => {
 
         await requestApp
             .put(`/posts/${createdPostId}`)
-            .set('Authorization', 'Basic ' + authB64)
+            .set('Authorization', 'Basic ' + authBasic64)
             .set('Content-Type', 'application/json')
             .send({
                 title: newTitle,

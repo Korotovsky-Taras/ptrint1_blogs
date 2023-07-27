@@ -12,8 +12,9 @@ import {usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
-import {AuthLoginModel} from "../types/login";
+import {AuthLoginModel, AuthMeViewModel} from "../types/login";
 import {Filter, ObjectId} from "mongodb";
+import {AuthDto} from "../dto/auth.dto";
 
 export const usersRepository = {
     async getAll(query: UserPaginationRepositoryModel): Promise<UserListViewModel> {
@@ -21,17 +22,14 @@ export const usersRepository = {
 
             let filter: Filter<User> = {};
 
-            const hasLoginTerm = query.searchLoginTerm != null;
-            const hasEmailTerm = query.searchEmailTerm != null;
+            const searchLoginTermFilter: Filter<User> | null = query.searchLoginTerm !== null ? {login: {$regex: query.searchLoginTerm, $options: "i" }} : null;
+            const searchEmailTermFilter: Filter<User> | null = query.searchEmailTerm !== null ? {email: {$regex: query.searchEmailTerm, $options: "i" }} : null;
 
-            const searchLoginTermFilter: Filter<User> = hasLoginTerm ? {login: {$regex: query.searchLoginTerm, $options: "i" }} : {};
-            const searchEmailTermFilter: Filter<User> = hasEmailTerm ? {email: {$regex: query.searchEmailTerm, $options: "i" }} : {};
-
-            if (hasLoginTerm && hasEmailTerm) {
+            if (searchLoginTermFilter && searchEmailTermFilter) {
                 filter = {$or: [searchEmailTermFilter, searchLoginTermFilter]}
-            } else if (hasLoginTerm) {
+            } else if (searchLoginTermFilter) {
                 filter = searchLoginTermFilter
-            } else if (hasEmailTerm) {
+            } else if (searchEmailTermFilter) {
                 filter = searchEmailTermFilter
             }
 
@@ -75,6 +73,15 @@ export const usersRepository = {
                 return usersRepository._verifyPassword(model.password, user.password.salt, user.password.hash)
             }
             return false;
+        });
+    },
+    async getAuthUserById(userId: string): Promise<AuthMeViewModel | null> {
+        return withMongoLogger<AuthMeViewModel | null>(async () => {
+            const user: UserMongoModel | null = await usersCollection.findOne({_id: new ObjectId(userId)})
+            if (user) {
+                return AuthDto.user(user)
+            }
+            return null;
         });
     },
     async clear(): Promise<void> {

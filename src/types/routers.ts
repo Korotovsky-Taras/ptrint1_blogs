@@ -20,6 +20,8 @@ export interface IPostsRouterController {
     getPost(req: Request, res: Response, next: NextFunction): Promise<Response>,
     updatePost(req: Request, res: Response, next: NextFunction): Promise<Response>,
     deletePost(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    createComment(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    getComments(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
 
 export interface ILogsRouterController {
@@ -29,10 +31,17 @@ export interface ILogsRouterController {
 
 export interface IAuthRouterController {
     login(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    me(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
 
 export interface IUsersRouterController {
     getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
     createUser(req: Request, res: Response, next: NextFunction): Promise<Response>,
     deleteUser(req: Request, res: Response, next: NextFunction): Promise<Response>,
+}
+
+export interface ICommentsRouterController {
+    getComment(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    updateComment(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    deleteComment(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }

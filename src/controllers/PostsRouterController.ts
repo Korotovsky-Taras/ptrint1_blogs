@@ -5,6 +5,7 @@ import {
     PaginationQueryModel,
     ParamIdModel,
     Post,
+    PostsCommentCreateModel,
     PostsCreateModel,
     PostsListViewModel,
     PostsUpdateModel,
@@ -12,11 +13,16 @@ import {
     RequestWithBody,
     RequestWithParams,
     RequestWithParamsBody,
+    RequestWithParamsQuery,
     RequestWithQuery,
     Status
 } from "../types";
 import {PostsDto} from "../dto/posts.dto";
 import {postsService} from "../services/PostsService";
+import {Comment, CommentListViewModel, CommentPaginationRepositoryModel, CommentViewModel} from "../types/comments";
+import {commentsRepository} from "../repositories/comments-repository";
+import {CommentsDto} from "../dto/comments.dto";
+import {commentsService} from "../services/CommentsService";
 
 
 class PostsRouterController implements IPostsRouterController {
@@ -54,6 +60,25 @@ class PostsRouterController implements IPostsRouterController {
         const isDeleted = await postsService.deletePostById(req.params.id);
         if (isDeleted) {
             return res.sendStatus(Status.NO_CONTENT);
+        }
+        return res.sendStatus(Status.NOT_FOUND);
+    }
+
+    async getComments(req: RequestWithParamsQuery<ParamIdModel, PaginationQueryModel<Comment>>, res: Response<CommentListViewModel>) {
+        if (req.userId) {
+            const query: CommentPaginationRepositoryModel = CommentsDto.toRepoQuery(req.query);
+            const comments: CommentListViewModel = await commentsRepository.getComments(req.params.id, req.userId, query);
+            return res.status(Status.OK).send(comments);
+        }
+        return res.sendStatus(Status.NOT_FOUND);
+    }
+
+    async createComment(req: RequestWithParamsBody<ParamIdModel, PostsCommentCreateModel>, res: Response<CommentViewModel>) {
+        if (req.userId) {
+            const comment: CommentViewModel | null = await commentsService.createComment(req.params.id, req.userId, req.body);
+            if (comment) {
+                return res.status(Status.CREATED).send(comment);
+            }
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
