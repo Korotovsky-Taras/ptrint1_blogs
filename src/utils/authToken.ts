@@ -3,8 +3,11 @@ import {appConfig} from "./config";
 import {AuthTokenPass} from "../types/login";
 import {withUserId} from "./withUserId";
 import {WithUserId} from "../types";
+import {BinaryToTextEncoding} from "crypto";
 
 const {tokenSecret} = appConfig;
+
+const signatureDigest: BinaryToTextEncoding = 'base64url';
 
 export const createAuthToken = (userId: string) : string => {
     const head = Buffer.from(
@@ -16,7 +19,7 @@ export const createAuthToken = (userId: string) : string => {
     let signature = crypto
         .createHmac('SHA256', tokenSecret)
         .update(`${head}.${body}`)
-        .digest('base64');
+        .digest(signatureDigest);
 
     return `${head}.${body}.${signature}`
 }
@@ -35,7 +38,7 @@ export const verifyAuthToken = (token: string) : AuthTokenPass | null => {
     let signature = crypto
         .createHmac('SHA256', tokenSecret)
         .update(`${tokenParts[0]}.${tokenParts[1]}`)
-        .digest('base64');
+        .digest(signatureDigest);
 
 
     if (signature === tokenParts[2] && user) {
