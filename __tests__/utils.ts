@@ -15,10 +15,10 @@ import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
 export const requestApp = supertest(app);
 export const authBasic64 = Buffer.from("admin:qwerty").toString("base64");
 
-type BlogCreationTestModel = BlogCreateModel;
-type PostCreationTestModel = Omit<PostsCreateModel, 'blogId'>;
-type CommentCreationTestModel = PostsCommentCreateModel;
-type UserCreationTestModel = UserCreateModel;
+export type BlogCreationTestModel = BlogCreateModel;
+export type PostCreationTestModel = Omit<PostsCreateModel, 'blogId'>;
+export type CommentCreationTestModel = PostsCommentCreateModel;
+export type UserCreationTestModel = UserCreateModel;
 
 export const validBlogData: BlogCreationTestModel = {
     name: "Taras",

@@ -12,7 +12,7 @@ class AuthRouterController implements IAuthRouterController {
                 accessToken: auth.token
             })
         }
-        return res.sendStatus(Status.UNATHORIZED)
+        return res.sendStatus(Status.BAD_REQUEST)
     }
     async me(req: Request, res: Response<AuthMeViewModel>, next: NextFunction) {
         if (req.userId) {
