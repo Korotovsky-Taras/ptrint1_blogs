@@ -125,7 +125,22 @@ describe("posts testing", () => {
                 .get(`/posts/${post.id}/comments`)
                 .set('Content-Type', 'application/json')
                 .expect(Status.OK);
+        }
 
+    })
+
+    it("should 404 post comment exist", async () => {
+
+        expect(blog).not.toBeNull();
+        expect(post).not.toBeNull();
+        expect(user).not.toBeNull();
+        const fakePostId = "64c3b8d60d815dc4a0f6b1d0";
+
+        if (blog && post && user) {
+            await requestApp
+                .get(`/posts/${fakePostId}/comments`)
+                .set('Content-Type', 'application/json')
+                .expect(Status.NOT_FOUND);
         }
 
     })
