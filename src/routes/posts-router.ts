@@ -1,7 +1,7 @@
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
 import {postsRouterController} from "../controllers/PostsRouterController";
 import {
-    postCommentCreationValidator,
+    commentCreateValidator,
     postCreationWithIdValidator,
     postUpdateWithIdValidator
 } from "../middlewares/posts-validation";
@@ -72,7 +72,7 @@ const postsCreateCommentRoute: Route<IPostsRouterController> = {
     action: 'createComment',
     middlewares: [
         authTokenValidation,
-        postCommentCreationValidator
+        commentCreateValidator
     ]
 }
 

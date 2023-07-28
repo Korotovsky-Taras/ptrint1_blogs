@@ -29,4 +29,18 @@ describe("auth testing", () => {
 
     })
 
+    it("should return error if passed wrong login or password; status 401;", async () => {
+
+        await requestApp
+            .post(`/auth/login`)
+            .set('Content-Type', 'application/json')
+            .send({
+                loginOrEmail: userModel.login,
+                password: "wrong password"
+            })
+            .expect(Status.UNATHORIZED);
+
+
+    })
+
 })

@@ -13,6 +13,7 @@ export enum Status {
     NO_CONTENT=204,
     BAD_REQUEST=400,
     UNATHORIZED=401,
+    FORBIDDEN=403,
     NOT_FOUND=404,
     DB_ERROR=409,
     UNHANDLED=500,

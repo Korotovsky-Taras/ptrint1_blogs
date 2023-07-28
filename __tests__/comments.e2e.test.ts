@@ -84,7 +84,7 @@ describe("comments testing", () => {
         expect(comment).not.toBeNull();
 
         if (comment && user) {
-            const newContent  = "comment is updated";
+             const newContent  = "comment is updated";
              await requestApp
                 .put(`/comments/${comment.id}`)
                 .set('Authorization', 'Bearer ' + createAuthToken(user.id))
@@ -105,6 +105,26 @@ describe("comments testing", () => {
                 commentatorInfo: expect.any(Object),
                 createdAt: expect.any(String),
             } as CommentViewModel)
+        }
+    })
+
+    it("should return 403 if user not comment owner", async () => {
+
+        expect(blog).not.toBeNull();
+        expect(post).not.toBeNull();
+        expect(comment).not.toBeNull();
+        const newUser = await createUser(createNewUserModel());
+
+        if (post && blog && newUser && comment) {
+            await requestApp
+                .put(`/comments/${comment.id}`)
+                .set('Content-Type', 'application/json')
+                .set('Authorization', 'Bearer ' + createAuthToken(newUser.id))
+                .send({
+                    content: "some new content"
+                } as CommentUpdateModel)
+                .expect(Status.FORBIDDEN);
+
         }
     })
 

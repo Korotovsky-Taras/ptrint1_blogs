@@ -37,6 +37,12 @@ export const commentsRepository = {
             return result.matchedCount === 1;
         })
     },
+    async isUserCommentOwner(commentId: string, userId: string): Promise<boolean> {
+        return withMongoLogger<boolean>(async () => {
+            const result : CommentMongoModel | null = await commentsCollection.findOne({_id: new ObjectId(commentId), "commentatorInfo.userId": userId});
+            return !!result;
+        })
+    },
     async deleteCommentById(id: string): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
             const result = await commentsCollection.deleteOne({_id: new ObjectId(id)});

@@ -15,9 +15,15 @@ class CommentsRouterController implements ICommentsRouterController {
         return res.sendStatus(Status.NOT_FOUND);
     }
     async updateComment(req: RequestWithParamsBody<ParamIdModel, CommentUpdateModel>, res: Response) {
-        const isUpdated: boolean = await commentsService.updateCommentById(req.params.id, req.body)
-        if (isUpdated) {
-            return res.sendStatus(Status.NO_CONTENT);
+        if (req.userId) {
+            const isUserComment: boolean = await commentsService.isUserCommentOwner(req.params.id, req.userId)
+            if (isUserComment) {
+                const isUpdated: boolean = await commentsService.updateCommentById(req.params.id, req.body);
+                if (isUpdated) {
+                    return res.sendStatus(Status.NO_CONTENT);
+                }
+            }
+            return res.sendStatus(Status.FORBIDDEN);
         }
         return res.sendStatus(Status.NOT_FOUND);
     }

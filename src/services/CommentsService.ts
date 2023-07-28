@@ -9,6 +9,9 @@ class CommentsService implements ICommentsService {
     async updateCommentById(commentId: string, model: CommentUpdateModel): Promise<boolean> {
         return commentsRepository.updateCommentById(commentId, model)
     }
+    async isUserCommentOwner(commentId: string, userId: string): Promise<boolean> {
+        return commentsRepository.isUserCommentOwner(commentId, userId)
+    }
     async deleteCommentById(commentId: string): Promise<boolean> {
         return commentsRepository.deleteCommentById(commentId)
     }
