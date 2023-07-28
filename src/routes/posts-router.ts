@@ -1,12 +1,9 @@
 import {authBasicValidation} from "../middlewares/auth-basic-validation";
 import {postsRouterController} from "../controllers/PostsRouterController";
-import {
-    commentCreateValidator,
-    postCreationWithIdValidator,
-    postUpdateWithIdValidator
-} from "../middlewares/posts-validation";
+import {postCreationWithIdValidator, postUpdateWithIdValidator} from "../middlewares/posts-validation";
 import {IPostsRouterController, Route, RouterMethod} from "../types";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
+import {commentCreateValidator} from "../middlewares/comments-validation";
 
 
 const postsRoute: Route<IPostsRouterController> = {

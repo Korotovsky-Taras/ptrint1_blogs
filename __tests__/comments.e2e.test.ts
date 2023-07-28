@@ -156,6 +156,26 @@ describe("comments testing", () => {
         }
     })
 
+    it("should 400 if passed body is incorrect", async () => {
+
+        expect(blog).not.toBeNull();
+        expect(post).not.toBeNull();
+        expect(user).not.toBeNull();
+        expect(comment).not.toBeNull();
+
+        if (post && blog && user && comment) {
+            await requestApp
+                .put(`/comments/${comment.id}`)
+                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .send({
+                    content:"short"
+                } as CommentUpdateModel)
+                .expect(Status.BAD_REQUEST);
+
+
+        }
+    })
+
     it("should delete comment", async () => {
 
         expect(blog).not.toBeNull();

@@ -1,7 +1,7 @@
 import {ICommentsRouterController, Route, RouterMethod} from "../types";
 import {commentsRouterController} from "../controllers/CommentsRouterController";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
-import {commentUpdateValidator} from "../middlewares/posts-validation";
+import {commentUpdateValidator} from "../middlewares/comments-validation";
 
 
 export const commentSingleRoute: Route<ICommentsRouterController> = {

@@ -94,33 +94,3 @@ export const postCreationWithIdValidator = withValidator(() => {
         ...postCreationValidator,
     ]
 })
-
-export const commentCreateValidator = withValidator(() => {
-    return [
-        checkSchema({
-            content: {
-                in: ['body'],
-                trim: true,
-                isLength: {
-                    options: {min: 1},
-                    errorMessage: "length should be > 0"
-                },
-            }
-        }),
-    ]
-})
-
-export const commentUpdateValidator = withValidator(() => {
-    return [
-        checkSchema({
-            content: {
-                in: ['body'],
-                trim: true,
-                isLength: {
-                    options: {min: 1},
-                    errorMessage: "length should be > 0"
-                },
-            }
-        }),
-    ]
-})
