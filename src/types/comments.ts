@@ -1,7 +1,8 @@
 import {WithId} from "mongodb";
-import {PaginationQueryModel, Status, WithPagination, WithPaginationQuery} from "./custom";
+import {PaginationQueryModel, WithPagination, WithPaginationQuery} from "./custom";
 
 export type Comment =  {
+    postId: string,
     content: string,
     commentatorInfo: CommentCommentatorInfo,
     createdAt: string
@@ -14,7 +15,7 @@ export type CommentCommentatorInfo =  {
 
 export type CommentMongoModel = WithId<Comment>;
 
-export type CommentCreateModel = Pick<Comment, 'content'> & Pick<CommentCommentatorInfo, "userId" | "userLogin">;
+export type CommentCreateModel = Pick<Comment, 'postId' | 'content'> & Pick<CommentCommentatorInfo, "userId" | "userLogin">;
 
 export type CommentUpdateModel = Pick<Comment, 'content'>;
 
@@ -27,7 +28,3 @@ export type CommentListViewModel = WithPagination<CommentViewModel>;
 export type CommentPaginationQueryModel = PaginationQueryModel<Comment>;
 
 export type CommentPaginationRepositoryModel = WithPaginationQuery<Comment>;
-
-export type CommentActionUpdatePayload = {
-    status: Status
-}

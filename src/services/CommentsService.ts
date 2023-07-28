@@ -54,6 +54,7 @@ class CommentsService implements ICommentsService {
         const post: PostViewModel | null = await postsRepository.findPostById(postId);
         if (user && post) {
             return commentsRepository.createComment({
+                postId,
                 userLogin: user.login,
                 userId: user.userId,
                 content: model.content

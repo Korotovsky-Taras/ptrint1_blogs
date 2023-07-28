@@ -1,11 +1,20 @@
-import {createBlog, createNewUserModel, createPost, createUser, generateString, requestApp} from "./utils";
+import {
+    createBlog,
+    createComment,
+    createNewUserModel,
+    createPost,
+    createUser,
+    generateString,
+    requestApp
+} from "./utils";
 import {BlogViewModel, PostViewModel, Status, UserViewModel} from "../src/types";
-import {CommentCreateModel} from "../src/types/comments";
+import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
 import {createAuthToken} from "../src/utils/authToken";
 
 let blog: BlogViewModel | null = null;
 let post: PostViewModel | null = null;
 let user: UserViewModel | null = null;
+let comment: CommentViewModel | null = null;
 
 describe("posts testing", () => {
 
@@ -14,6 +23,9 @@ describe("posts testing", () => {
         blog = await createBlog();
         post = await createPost(blog.id);
         user = await createUser(createNewUserModel());
+        comment = await createComment(post.id, user.id, {
+            content: generateString(20)
+        });
     })
 
     it("should create comment", async () => {
@@ -97,6 +109,22 @@ describe("posts testing", () => {
                     content: generateString(20)
                 } as CommentCreateModel)
                 .expect(Status.NOT_FOUND);
+
+        }
+
+    })
+
+    it("should 200 post comment exist", async () => {
+
+        expect(blog).not.toBeNull();
+        expect(post).not.toBeNull();
+        expect(user).not.toBeNull();
+
+        if (blog && post && user) {
+            await requestApp
+                .get(`/posts/${post.id}/comments`)
+                .set('Content-Type', 'application/json')
+                .expect(Status.OK);
 
         }
 

@@ -17,6 +17,7 @@ export const commentsRepository = {
     async createComment(input: CommentCreateModel): Promise<CommentViewModel> {
         return withMongoLogger<CommentViewModel>(async () => {
             const newComment: Comment = {
+                postId: input.postId,
                 content: input.content,
                 commentatorInfo: {
                     userId: input.userId,
@@ -55,9 +56,9 @@ export const commentsRepository = {
             return comment ? CommentsDto.comment(comment) : null;
         })
     },
-    async getComments(postId: string, userId: string, query: CommentPaginationRepositoryModel): Promise<CommentListViewModel> {
+    async getComments(postId: string, query: CommentPaginationRepositoryModel): Promise<CommentListViewModel> {
         return withMongoLogger<CommentListViewModel>(async () => {
-            return withMongoQueryFilterPagination<Comment, CommentViewModel>(commentsCollection, CommentsDto.allComments, {}, query)
+            return withMongoQueryFilterPagination<Comment, CommentViewModel>(commentsCollection, CommentsDto.allComments, {postId}, query)
         })
     },
     async clear(): Promise<void> {
