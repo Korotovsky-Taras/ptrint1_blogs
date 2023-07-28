@@ -1,5 +1,5 @@
 import {WithId} from "mongodb";
-import {PaginationQueryModel, WithPagination, WithPaginationQuery} from "./custom";
+import {PaginationQueryModel, Status, WithPagination, WithPaginationQuery} from "./custom";
 
 export type Comment =  {
     content: string,
@@ -27,3 +27,7 @@ export type CommentListViewModel = WithPagination<CommentViewModel>;
 export type CommentPaginationQueryModel = PaginationQueryModel<Comment>;
 
 export type CommentPaginationRepositoryModel = WithPaginationQuery<Comment>;
+
+export type CommentActionUpdatePayload = {
+    status: Status
+}

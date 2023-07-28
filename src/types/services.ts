@@ -3,6 +3,7 @@ import {PostsCommentCreateModel, PostsCreateModel, PostsUpdateModel, PostViewMod
 import {UserCreateModel, UserViewModel} from "./users";
 import {AuthLoginModel, AuthMeViewModel, AuthToken} from "./login";
 import {CommentUpdateModel, CommentViewModel} from "./comments";
+import {Status} from "./custom";
 
 export interface IBlogService {
     createBlog(model: BlogCreateModel): Promise<BlogViewModel>
@@ -29,8 +30,7 @@ export interface IAuthService {
 }
 
 export interface ICommentsService {
-    updateCommentById(commentId: string, model: CommentUpdateModel): Promise<boolean>,
-    isUserCommentOwner(commentId: string, userId: string): Promise<boolean>,
-    deleteCommentById(commentId: string): Promise<boolean>,
+    updateCommentById(commentId: string, userId: string | null, model: CommentUpdateModel): Promise<Status>,
+    deleteCommentById(commentId: string, userId: string | null ): Promise<Status>,
     createComment(postId: string, userId: string, model: PostsCommentCreateModel): Promise<CommentViewModel | null>
 }

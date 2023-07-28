@@ -128,6 +128,34 @@ describe("comments testing", () => {
         }
     })
 
+    it("DELETE/PUT should return 404 if :id from uri param not found", async () => {
+
+        expect(blog).not.toBeNull();
+        expect(post).not.toBeNull();
+        expect(user).not.toBeNull();
+        expect(comment).not.toBeNull();
+
+        const fakeCommentId = "64b92eac872655d706c510f1";
+
+        if (post && blog && user && comment) {
+            await requestApp
+                .put(`/comments/${fakeCommentId}`)
+                .set('Content-Type', 'application/json')
+                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .send({
+                    content: "some new content"
+                } as CommentUpdateModel)
+                .expect(Status.NOT_FOUND);
+
+            await requestApp
+                .delete(`/comments/${fakeCommentId}`)
+                .set('Content-Type', 'application/json')
+                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .expect(Status.NOT_FOUND);
+
+        }
+    })
+
     it("should delete comment", async () => {
 
         expect(blog).not.toBeNull();

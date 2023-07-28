@@ -15,30 +15,12 @@ class CommentsRouterController implements ICommentsRouterController {
         return res.sendStatus(Status.NOT_FOUND);
     }
     async updateComment(req: RequestWithParamsBody<ParamIdModel, CommentUpdateModel>, res: Response) {
-        if (req.userId) {
-            const isUserCommentOwner: boolean = await commentsService.isUserCommentOwner(req.params.id, req.userId)
-            if (isUserCommentOwner) {
-                const isUpdated: boolean = await commentsService.updateCommentById(req.params.id, req.body);
-                if (isUpdated) {
-                    return res.sendStatus(Status.NO_CONTENT);
-                }
-            }
-            return res.sendStatus(Status.FORBIDDEN);
-        }
-        return res.sendStatus(Status.NOT_FOUND);
+        const status: Status = await commentsService.updateCommentById(req.params.id, req.userId, req.body);
+        return res.sendStatus(status);
     }
     async deleteComment(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        if (req.userId) {
-            const isUserCommentOwner: boolean = await commentsService.isUserCommentOwner(req.params.id, req.userId)
-            if (isUserCommentOwner) {
-                const isDeleted: boolean = await commentsService.deleteCommentById(req.params.id)
-                if (isDeleted) {
-                    return res.sendStatus(Status.NO_CONTENT);
-                }
-            }
-            return res.sendStatus(Status.FORBIDDEN);
-        }
-        return res.sendStatus(Status.NOT_FOUND);
+        const status: Status = await commentsService.deleteCommentById(req.params.id, req.userId);
+        return res.sendStatus(status);
     }
 }
 
