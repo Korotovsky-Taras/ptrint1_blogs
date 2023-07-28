@@ -129,7 +129,7 @@ describe("posts testing", () => {
 
     })
 
-    it("should 404 post comment exist", async () => {
+    it("should 404 post not exist", async () => {
 
         expect(blog).not.toBeNull();
         expect(post).not.toBeNull();
