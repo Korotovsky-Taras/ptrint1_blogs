@@ -39,19 +39,21 @@ export const validUserData: UserCreationTestModel = {
 }
 
 export const validCommentData: CommentCreationTestModel = {
-    content: "valid content",
+    content: "valid content of comment by lorem ipsum",
 }
 
-export function generateCredentials(length = 8) : {login: string, password: string} {
-    // Generate random login and password
+export function generateString(length = 20) : string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let login = '';
-    let password = '';
+    let string: string = '';
     for (let i = 0; i < length; i++) {
-        login += chars.charAt(Math.floor(Math.random() * chars.length));
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
+        string += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return { login, password };
+    return string;
+}
+
+export function generateCredentials(loginLength = 8, passwordLength = 8) : {login: string, password: string} {
+    // Generate random login and password
+    return { login: generateString(loginLength), password: generateString(passwordLength) };
 }
 
 

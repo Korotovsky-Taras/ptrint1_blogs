@@ -4,6 +4,7 @@ import {
     createNewUserModel,
     createPost,
     createUser,
+    generateString,
     requestApp,
     validCommentData
 } from "./utils";
@@ -84,7 +85,7 @@ describe("comments testing", () => {
         expect(comment).not.toBeNull();
 
         if (comment && user) {
-             const newContent  = "comment is updated";
+             const newContent  = generateString(20);
              await requestApp
                 .put(`/comments/${comment.id}`)
                 .set('Authorization', 'Bearer ' + createAuthToken(user.id))
@@ -121,7 +122,7 @@ describe("comments testing", () => {
                 .set('Content-Type', 'application/json')
                 .set('Authorization', 'Bearer ' + createAuthToken(newUser.id))
                 .send({
-                    content: "some new content"
+                    content: generateString(20)
                 } as CommentUpdateModel)
                 .expect(Status.FORBIDDEN);
 
@@ -143,7 +144,7 @@ describe("comments testing", () => {
                 .set('Content-Type', 'application/json')
                 .set('Authorization', 'Bearer ' + createAuthToken(user.id))
                 .send({
-                    content: "some new content"
+                    content: generateString(20)
                 } as CommentUpdateModel)
                 .expect(Status.NOT_FOUND);
 
@@ -168,7 +169,15 @@ describe("comments testing", () => {
                 .put(`/comments/${comment.id}`)
                 .set('Authorization', 'Bearer ' + createAuthToken(user.id))
                 .send({
-                    content:"short"
+                    content: generateString(6)
+                } as CommentUpdateModel)
+                .expect(Status.BAD_REQUEST);
+
+            await requestApp
+                .put(`/comments/${comment.id}`)
+                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .send({
+                    content: generateString(400)
                 } as CommentUpdateModel)
                 .expect(Status.BAD_REQUEST);
 
