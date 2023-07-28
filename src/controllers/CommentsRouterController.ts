@@ -27,10 +27,16 @@ class CommentsRouterController implements ICommentsRouterController {
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
-    async deleteComment(req: RequestWithParams<{id: string}>, res: Response, next: NextFunction) {
-        const isDeleted: boolean = await commentsService.deleteCommentById(req.params.id)
-        if (isDeleted) {
-            return res.sendStatus(Status.NO_CONTENT);
+    async deleteComment(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
+        if (req.userId) {
+            const isUserCommentOwner: boolean = await commentsService.isUserCommentOwner(req.params.id, req.userId)
+            if (isUserCommentOwner) {
+                const isDeleted: boolean = await commentsService.deleteCommentById(req.params.id)
+                if (isDeleted) {
+                    return res.sendStatus(Status.NO_CONTENT);
+                }
+            }
+            return res.sendStatus(Status.FORBIDDEN);
         }
         return res.sendStatus(Status.NOT_FOUND);
     }
