@@ -187,7 +187,7 @@ export const usersRepository = {
     _verifyConfirmationCode(confirmation: UserEmailConfirmation): boolean {
         const expTime = new Date(confirmation.expiresIn).getTime();
         const currentTime = new Date().getTime();
-        return !confirmation.confirmed && expTime < currentTime;
+        return !confirmation.confirmed && currentTime < expTime;
     },
     _createEmailConfirmation(): UserEmailConfirmation  {
         let expiredDate: Date = new Date();
