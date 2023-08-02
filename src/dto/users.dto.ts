@@ -2,6 +2,7 @@ import {
     UserListMongoModel,
     UserListViewModel,
     UserMongoModel,
+    UserNotConfirmedViewModel,
     UserPaginationQueryModel,
     UserPaginationRepositoryModel,
     UserViewModel
@@ -38,6 +39,12 @@ export const UsersDto = {
             login,
             email,
             createdAt,
+        }
+    },
+    userNotConfirmed(userModel: UserMongoModel): UserNotConfirmedViewModel {
+        return {
+            ...UsersDto.user(userModel),
+            emailConfirmation: userModel.emailConfirmation,
         }
     },
     toRepoQuery(query: UserPaginationQueryModel): UserPaginationRepositoryModel {

@@ -45,6 +45,10 @@ export type QueryGateModel<RegModel, RepoModel extends {[K in keyof RegModel]: a
     [K in keyof RepoModel]: RepoModel[K]
 }
 
+export type TupleUnion<U extends string, R extends string[] = []> = {
+    [S in U]: Exclude<U, S> extends never ? [...R, S] : TupleUnion<Exclude<U, S>, [...R, S]>;
+}[U] & string[];
+
 export type SortingDirection = "asc" | "desc";
 
 export interface PaginationQueryModel<T extends object> extends ParsedQs {

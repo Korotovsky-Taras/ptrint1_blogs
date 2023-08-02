@@ -1,7 +1,14 @@
 import {IAuthRouterController, RequestWithBody, Status} from "../types";
 import {NextFunction, Request, Response} from "express";
 import {authService} from "../services/AuthService";
-import {AuthLoginModel, AuthMeViewModel, AuthToken} from "../types/login";
+import {
+    AuthLoginModel,
+    AuthMeViewModel,
+    AuthRegisterConfirmationModel,
+    AuthRegisterModel,
+    AuthServiceResultModel,
+    AuthToken
+} from "../types/login";
 
 
 class AuthRouterController implements IAuthRouterController {
@@ -14,6 +21,7 @@ class AuthRouterController implements IAuthRouterController {
         }
         return res.sendStatus(Status.UNATHORIZED)
     }
+
     async me(req: Request, res: Response<AuthMeViewModel>, next: NextFunction) {
         if (req.userId) {
             const model: AuthMeViewModel | null = await authService.getAuthUserById(req.userId);
@@ -23,6 +31,30 @@ class AuthRouterController implements IAuthRouterController {
             }
         }
         return res.sendStatus(Status.UNATHORIZED)
+    }
+
+    async registration(req: RequestWithBody<AuthRegisterModel>, res: Response, next: NextFunction) {
+        const result: AuthServiceResultModel = await authService.registerUser(req.body);
+        if (result.success) {
+            return res.sendStatus(Status.NO_CONTENT)
+        }
+        return res.sendStatus(Status.BAD_REQUEST);
+    }
+
+    async registrationConfirmation(req: RequestWithBody<AuthRegisterConfirmationModel>, res: Response, next: NextFunction) {
+        const result: AuthServiceResultModel = await authService.verifyConfirmationCode(req.body);
+        if (result.success) {
+            return res.sendStatus(Status.NO_CONTENT)
+        }
+        return res.sendStatus(Status.BAD_REQUEST);
+    }
+
+    async registrationEmailResending(req: Request, res: Response, next: NextFunction) {
+        const result: AuthServiceResultModel = await authService.tryResendConfirmationCode(req.body);
+        if (result.success) {
+            return res.sendStatus(Status.NO_CONTENT)
+        }
+        return res.sendStatus(Status.BAD_REQUEST);
     }
 }
 

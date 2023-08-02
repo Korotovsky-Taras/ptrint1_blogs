@@ -2,6 +2,8 @@ import {IAuthRouterController, Route, RouterMethod} from "../types";
 import {authRouterController} from "../controllers/AuthRouterController";
 import {loginCreationValidator} from "../middlewares/login-create-validation";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
+import {userCreateValidation} from "../middlewares/user-create-validation";
+import {authCodeValidation, authEmailValidation} from "../middlewares/auth-registration-validation";
 
 
 export const authLoginRoute: Route<IAuthRouterController> = {
@@ -24,7 +26,40 @@ export const authMeRoute: Route<IAuthRouterController> = {
     ]
 }
 
+export const authRegistrationRoute: Route<IAuthRouterController> = {
+    route: "/auth/registration",
+    method: RouterMethod.POST,
+    controller: authRouterController,
+    action: 'registration',
+    middlewares: [
+        userCreateValidation
+    ]
+}
+
+export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
+    route: "/auth/registration-confirmation",
+    method: RouterMethod.POST,
+    controller: authRouterController,
+    action: 'registrationConfirmation',
+    middlewares: [
+        authCodeValidation
+    ]
+}
+
+export const authRegistrationEmailResendingRoute: Route<IAuthRouterController> = {
+    route: "/auth/registration-email-resending",
+    method: RouterMethod.POST,
+    controller: authRouterController,
+    action: 'registrationEmailResending',
+    middlewares: [
+        authEmailValidation
+    ]
+}
+
 export const authRoutes: Route<IAuthRouterController>[] = [
+    authRegistrationEmailResendingRoute,
+    authRegistrationConfirmationRoute,
+    authRegistrationRoute,
     authLoginRoute,
     authMeRoute
 ];

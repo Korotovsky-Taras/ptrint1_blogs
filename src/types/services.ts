@@ -1,7 +1,15 @@
 import {BlogCreateModel, BlogPostCreateModel, BlogUpdateModel, BlogViewModel} from "./blogs";
 import {PostsCommentCreateModel, PostsCreateModel, PostsUpdateModel, PostViewModel} from "./posts";
 import {UserCreateModel, UserViewModel} from "./users";
-import {AuthLoginModel, AuthMeViewModel, AuthToken} from "./login";
+import {
+    AuthLoginModel,
+    AuthMeViewModel,
+    AuthRegisterConfirmationModel,
+    AuthRegisterModel,
+    AuthResendingEmailModel,
+    AuthServiceResultModel,
+    AuthToken
+} from "./login";
 import {CommentUpdateModel, CommentViewModel} from "./comments";
 import {Status} from "./custom";
 
@@ -20,12 +28,16 @@ export interface IPostsService {
 
 
 export interface IUsersService {
+    verifyUserWithConfirmationCode(code: string): Promise<boolean>
     createUser(model: UserCreateModel): Promise<UserViewModel | null>
     deleteUser(blogId: string): Promise<boolean>
 }
 
 export interface IAuthService {
     login(model: AuthLoginModel): Promise<AuthToken | null>
+    registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel>
+    verifyConfirmationCode(model: AuthRegisterConfirmationModel): Promise<AuthServiceResultModel>
+    tryResendConfirmationCode(model: AuthResendingEmailModel): Promise<AuthServiceResultModel>,
     getAuthUserById(userId: string): Promise<AuthMeViewModel | null>
 }
 

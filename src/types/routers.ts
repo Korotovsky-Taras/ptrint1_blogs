@@ -31,6 +31,9 @@ export interface ILogsRouterController {
 
 export interface IAuthRouterController {
     login(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    registration(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    registrationConfirmation(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    registrationEmailResending(req: Request, res: Response, next: NextFunction): Promise<Response>,
     me(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
 

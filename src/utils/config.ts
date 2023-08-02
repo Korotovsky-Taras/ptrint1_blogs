@@ -12,6 +12,8 @@ export const appConfig: AppConfig = {
     authPassword: process.env.AUTH_PASSWORD || "admin",
     tokenSecret: process.env.TOKEN_SK || "secret",
     mongoUrl: process.env.MONGO_URL || "mongodb://0.0.0.0:27017/?maxPoolSize=20&m=majority",
+    gmailAdapterUser: process.env.MAIL_ADAPTER_USER || "",
+    gmailAdapterPass: process.env.MAIL_ADAPTER_PASS || "",
 };
 
 type AppConfig = {
@@ -20,4 +22,6 @@ type AppConfig = {
     authPassword: string
     tokenSecret: string
     mongoUrl: string
+    gmailAdapterUser: string
+    gmailAdapterPass: string
 }

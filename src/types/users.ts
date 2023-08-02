@@ -7,6 +7,7 @@ export type User = {
     email: string,
     password: UserEncodedPassword,
     createdAt: string,
+    emailConfirmation: UserEmailConfirmation | null,
 }
 
 export type WithUserId = {
@@ -18,15 +19,25 @@ export type UserEncodedPassword = {
     hash: string
 }
 
+export type UserEmailConfirmation = {
+    expiresIn: string,
+    code: string,
+    confirmed: boolean,
+}
+
 export type UserMongoModel = WithId<User>
 
 export type UserCreateModel = Pick<User, 'login' | 'email' > & {password: string};
 
 export type UserViewModel = Pick<User, 'login' | 'email' | 'createdAt'> & { id: string }
 
+export type UserNotConfirmedViewModel = Pick<User, 'login' | 'email' | 'createdAt' | 'emailConfirmation'> & { id: string }
+
 export type UserListMongoModel = WithPagination<UserMongoModel>
 
 export type UserListViewModel = WithPagination<UserViewModel>
+
+export type UserReplaceConfirmationData = Pick<User, 'email'> & { code: string }
 
 export type UserPaginationQueryModel = PaginationQueryModel<User> & {
     searchLoginTerm?: string,
