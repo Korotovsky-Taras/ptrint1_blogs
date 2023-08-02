@@ -1,40 +1,7 @@
 import {withValidator} from "../utils/withValidator";
 import {checkSchema} from "express-validator";
 import {usersRepository} from "../repositories/users-repository";
-import {userCreateValidation} from "./user-create-validation";
 
-
-export const authRegistrationValidation = withValidator(() => {
-    return [
-        ...userCreateValidation,
-        checkSchema({
-            email: {
-                in: ['body'],
-                trim: true,
-                custom: {
-                    options: async (email) => {
-                        const res = await usersRepository.getUserByEmail(email);
-                        if (res != null) {
-                            throw Error("email already in use")
-                        }
-                    },
-                },
-            },
-            login: {
-                in: ['body'],
-                trim: true,
-                custom: {
-                    options: async (login) => {
-                        const res = await usersRepository.getUserByLogin(login);
-                        if (res != null) {
-                            throw Error("login already in use")
-                        }
-                    },
-                },
-            }
-        }),
-    ]
-})
 
 export const authEmailValidation = withValidator(() => {
     return [
@@ -54,7 +21,45 @@ export const authEmailValidation = withValidator(() => {
     ]
 })
 
-export const authCodeValidation = withValidator(() => {
+export const authLoginInUseValidation = withValidator(() => {
+    return [
+        checkSchema({
+            login: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (login) => {
+                        const res = await usersRepository.getUserByLogin(login);
+                        if (res != null) {
+                            throw Error("login already in use")
+                        }
+                    },
+                },
+            }
+        }),
+    ]
+})
+
+export const authEmailInUseValidation = withValidator(() => {
+    return [
+        checkSchema({
+            email: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (email) => {
+                        const res = await usersRepository.getUserByEmail(email);
+                        if (res != null) {
+                            throw Error("email already in use")
+                        }
+                    },
+                },
+            }
+        }),
+    ]
+})
+
+export const authConfirmationValidation = withValidator(() => {
     return [
         checkSchema({
             code: {
@@ -63,6 +68,14 @@ export const authCodeValidation = withValidator(() => {
                 isLength: {
                     options: { min: 1 },
                     errorMessage: "code should not be empty"
+                },
+                custom: {
+                    options: async (code) => {
+                        const res = await usersRepository.getUserByConfirmationCode(code);
+                        if (res === null) {
+                            throw Error("code is not valid")
+                        }
+                    },
                 },
             }
         }),

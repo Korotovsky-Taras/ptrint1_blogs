@@ -127,6 +127,15 @@ export const usersRepository = {
             return null;
         });
     },
+    async getUserByConfirmationCode(code: string): Promise<UserViewModel | null> {
+        return withMongoLogger<UserViewModel | null>(async () => {
+            const user: UserMongoModel | null = await usersCollection.findOne({"emailConfirmation.code": code})
+            if (user) {
+                return UsersDto.user(user)
+            }
+            return null;
+        });
+    },
     async getUserByLogin(login: string): Promise<UserViewModel | null> {
         return withMongoLogger<UserViewModel | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({ login })
@@ -169,7 +178,7 @@ export const usersRepository = {
                         "emailConfirmation.confirmed": confirmation.confirmed,
                     }})
                 return {
-                    email: user.email,
+                    email,
                     code: confirmation.code,
                 }
             }

@@ -3,10 +3,12 @@ import {authRouterController} from "../controllers/AuthRouterController";
 import {loginCreationValidator} from "../middlewares/login-create-validation";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
 import {
-    authCodeValidation,
+    authConfirmationValidation,
+    authEmailInUseValidation,
     authEmailValidation,
-    authRegistrationValidation
+    authLoginInUseValidation
 } from "../middlewares/auth-registration-validation";
+import {userCreateValidation} from "../middlewares/user-create-validation";
 
 
 export const authLoginRoute: Route<IAuthRouterController> = {
@@ -35,7 +37,9 @@ export const authRegistrationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registration',
     middlewares: [
-        authRegistrationValidation
+        userCreateValidation,
+        authLoginInUseValidation,
+        authEmailInUseValidation
     ]
 }
 
@@ -45,7 +49,7 @@ export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registrationConfirmation',
     middlewares: [
-        authCodeValidation
+        authConfirmationValidation,
     ]
 }
 
@@ -55,7 +59,8 @@ export const authRegistrationEmailResendingRoute: Route<IAuthRouterController> =
     controller: authRouterController,
     action: 'registrationEmailResending',
     middlewares: [
-        authEmailValidation
+        authEmailValidation,
+        authEmailInUseValidation
     ]
 }
 
