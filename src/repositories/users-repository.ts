@@ -120,7 +120,7 @@ export const usersRepository = {
     },
     async getUserWithConfirmationByEmail(email: string): Promise<UserWithConfirmedViewModel | null> {
         return withMongoLogger<UserWithConfirmedViewModel | null>(async () => {
-            const user: UserMongoModel | null = await usersCollection.findOne({ email: email })
+            const user: UserMongoModel | null = await usersCollection.findOne({ email })
             if (user) {
                 return UsersDto.userWithConfirmation(user)
             }
