@@ -59,8 +59,7 @@ export const authRegistrationEmailResendingRoute: Route<IAuthRouterController> =
     controller: authRouterController,
     action: 'registrationEmailResending',
     middlewares: [
-        authEmailValidation,
-        authEmailInUseValidation
+        authEmailValidation
     ]
 }
 
