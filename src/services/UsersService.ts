@@ -1,4 +1,4 @@
-import {IUsersService, UserCreateModel, UserNotConfirmedViewModel, UserViewModel} from "../types";
+import {IUsersService, UserCreateModel, UserViewModel, UserWithConfirmedViewModel} from "../types";
 import {usersRepository} from "../repositories/users-repository";
 
 class UsersService implements IUsersService {
@@ -6,7 +6,7 @@ class UsersService implements IUsersService {
     /**
      * Создаст пользователя с подтверждением авторизации
      */
-    async createUserWithVerification(model: UserCreateModel): Promise<UserNotConfirmedViewModel | null> {
+    async createUserWithVerification(model: UserCreateModel): Promise<UserWithConfirmedViewModel | null> {
         return usersRepository.createUserWithConfirmationCode(model);
     }
 

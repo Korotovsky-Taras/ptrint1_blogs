@@ -31,7 +31,7 @@ export type UserCreateModel = Pick<User, 'login' | 'email' > & {password: string
 
 export type UserViewModel = Pick<User, 'login' | 'email' | 'createdAt'> & { id: string }
 
-export type UserNotConfirmedViewModel = Pick<User, 'login' | 'email' | 'createdAt' | 'emailConfirmation'> & { id: string }
+export type UserWithConfirmedViewModel = Pick<User, 'login' | 'email' | 'createdAt' | 'emailConfirmation'> & { id: string }
 
 export type UserListMongoModel = WithPagination<UserMongoModel>
 

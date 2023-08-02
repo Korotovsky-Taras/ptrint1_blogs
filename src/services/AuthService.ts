@@ -1,4 +1,4 @@
-import {IAuthService, UserNotConfirmedViewModel, UserReplaceConfirmationData} from "../types";
+import {IAuthService, UserReplaceConfirmationData, UserWithConfirmedViewModel} from "../types";
 import {
     AuthLoginModel,
     AuthMeViewModel,
@@ -28,7 +28,7 @@ class AuthService implements IAuthService {
     }
 
     async registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel> {
-        const user: UserNotConfirmedViewModel | null = await userService.createUserWithVerification(model);
+        const user: UserWithConfirmedViewModel | null = await userService.createUserWithVerification(model);
 
         if (user && user.emailConfirmation) {
             await authMailManager.sendRegistrationMail(user.email, user.emailConfirmation.code);

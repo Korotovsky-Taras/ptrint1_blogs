@@ -2,10 +2,10 @@ import {
     UserListMongoModel,
     UserListViewModel,
     UserMongoModel,
-    UserNotConfirmedViewModel,
     UserPaginationQueryModel,
     UserPaginationRepositoryModel,
-    UserViewModel
+    UserViewModel,
+    UserWithConfirmedViewModel
 } from "../types";
 import {
     withExternalDirection,
@@ -41,7 +41,7 @@ export const UsersDto = {
             createdAt,
         }
     },
-    userNotConfirmed(userModel: UserMongoModel): UserNotConfirmedViewModel {
+    userWithConfirmation(userModel: UserMongoModel): UserWithConfirmedViewModel {
         return {
             ...UsersDto.user(userModel),
             emailConfirmation: userModel.emailConfirmation,

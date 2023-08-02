@@ -1,6 +1,8 @@
 import {withValidator} from "../utils/withValidator";
 import {checkSchema} from "express-validator";
 import {usersRepository} from "../repositories/users-repository";
+import {UserWithConfirmedViewModel} from "../types";
+import {userCreateValidation} from "./user-create-validation";
 
 
 export const authEmailValidation = withValidator(() => {
@@ -15,44 +17,6 @@ export const authEmailValidation = withValidator(() => {
                 matches: {
                     options: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
                     errorMessage: "should match email pattern"
-                },
-            }
-        }),
-    ]
-})
-
-export const authLoginInUseValidation = withValidator(() => {
-    return [
-        checkSchema({
-            login: {
-                in: ['body'],
-                trim: true,
-                custom: {
-                    options: async (login) => {
-                        const res = await usersRepository.getUserByLogin(login);
-                        if (res != null) {
-                            throw Error("login already in use")
-                        }
-                    },
-                },
-            }
-        }),
-    ]
-})
-
-export const authEmailInUseValidation = withValidator(() => {
-    return [
-        checkSchema({
-            email: {
-                in: ['body'],
-                trim: true,
-                custom: {
-                    options: async (email) => {
-                        const res = await usersRepository.getUserByEmail(email);
-                        if (res != null) {
-                            throw Error("email already in use")
-                        }
-                    },
                 },
             }
         }),
@@ -74,6 +38,63 @@ export const authCodeValidation = withValidator(() => {
                         const res = await usersRepository.getUserByConfirmationCode(code);
                         if (res === null) {
                             throw Error("code is not valid")
+                        }
+                    },
+                },
+            }
+        }),
+    ]
+})
+
+export const authEmailResendingValidation = withValidator(() => {
+    return [
+        ...authEmailValidation,
+        checkSchema({
+            email: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (email) => {
+                        const user: UserWithConfirmedViewModel | null = await usersRepository.getUserWithConfirmationByEmail(email);
+                        if (!user) {
+                            throw Error("email doesnt exist")
+                        }
+                        if (user.emailConfirmation && user.emailConfirmation.confirmed) {
+                            throw Error("email already confirmed")
+                        }
+                    },
+                },
+            }
+        }),
+    ]
+})
+
+export const authRegistrationValidation = withValidator(() => {
+    return [
+        ...userCreateValidation,
+        checkSchema({
+            login: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (login) => {
+                        const res = await usersRepository.getUserByLogin(login);
+                        if (res != null) {
+                            throw Error("login already in use")
+                        }
+                    },
+                },
+            }
+        }),
+        checkSchema({
+            email: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (email) => {
+                        const user: UserWithConfirmedViewModel | null = await usersRepository.getUserWithConfirmationByEmail(email);
+                        if (!user) {
+                            throw Error("email doesnt exist")
                         }
                     },
                 },

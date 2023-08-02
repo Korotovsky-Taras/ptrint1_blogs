@@ -6,10 +6,10 @@ import {
     UserEncodedPassword,
     UserListViewModel,
     UserMongoModel,
-    UserNotConfirmedViewModel,
     UserPaginationRepositoryModel,
     UserReplaceConfirmationData,
-    UserViewModel
+    UserViewModel,
+    UserWithConfirmedViewModel
 } from "../types";
 import {usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
@@ -68,8 +68,8 @@ export const usersRepository = {
             })
         })
     },
-    async createUserWithConfirmationCode(model: UserCreateModel): Promise<UserNotConfirmedViewModel | null> {
-        return withMongoLogger<UserNotConfirmedViewModel | null>(async () => {
+    async createUserWithConfirmationCode(model: UserCreateModel): Promise<UserWithConfirmedViewModel | null> {
+        return withMongoLogger<UserWithConfirmedViewModel | null>(async () => {
 
             const userExist: UserMongoModel | null = await usersCollection.findOne({$or: [{email: model.email}, {login: model.login}]});
 
@@ -94,7 +94,7 @@ export const usersRepository = {
 
             const user = await usersCollection.insertOne(newUser)
 
-            return UsersDto.userNotConfirmed({
+            return UsersDto.userWithConfirmation({
                 _id: user.insertedId,
                 ...newUser,
             })
@@ -118,11 +118,11 @@ export const usersRepository = {
             return null;
         });
     },
-    async getUserByEmail(email: string): Promise<UserViewModel | null> {
-        return withMongoLogger<UserViewModel | null>(async () => {
-            const user: UserMongoModel | null = await usersCollection.findOne({ email })
+    async getUserWithConfirmationByEmail(email: string): Promise<UserWithConfirmedViewModel | null> {
+        return withMongoLogger<UserWithConfirmedViewModel | null>(async () => {
+            const user: UserMongoModel | null = await usersCollection.findOne({ email: email })
             if (user) {
-                return UsersDto.user(user)
+                return UsersDto.userWithConfirmation(user)
             }
             return null;
         });
