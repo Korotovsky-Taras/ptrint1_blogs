@@ -19,6 +19,18 @@ export const authRegistrationValidation = withValidator(() => {
                         }
                     },
                 },
+            },
+            login: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (login) => {
+                        const res = await usersRepository.getUserByLogin(login);
+                        if (res != null) {
+                            throw Error("login already in use")
+                        }
+                    },
+                },
             }
         }),
     ]
