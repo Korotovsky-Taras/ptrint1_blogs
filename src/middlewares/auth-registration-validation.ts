@@ -59,7 +59,7 @@ export const authEmailInUseValidation = withValidator(() => {
     ]
 })
 
-export const authConfirmationValidation = withValidator(() => {
+export const authCodeValidation = withValidator(() => {
     return [
         checkSchema({
             code: {

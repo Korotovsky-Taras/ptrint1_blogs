@@ -3,7 +3,7 @@ import {authRouterController} from "../controllers/AuthRouterController";
 import {loginCreationValidator} from "../middlewares/login-create-validation";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
 import {
-    authConfirmationValidation,
+    authCodeValidation,
     authEmailInUseValidation,
     authEmailValidation,
     authLoginInUseValidation
@@ -49,7 +49,7 @@ export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registrationConfirmation',
     middlewares: [
-        authConfirmationValidation,
+        authCodeValidation,
     ]
 }
 
