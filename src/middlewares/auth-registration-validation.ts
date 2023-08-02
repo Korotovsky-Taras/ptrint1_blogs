@@ -78,8 +78,8 @@ export const authRegistrationValidation = withValidator(() => {
                 trim: true,
                 custom: {
                     options: async (login) => {
-                        const res = await usersRepository.getUserByLogin(login);
-                        if (res != null) {
+                        const user = await usersRepository.getUserByLogin(login);
+                        if (user) {
                             throw Error("login already in use")
                         }
                     },
@@ -93,8 +93,8 @@ export const authRegistrationValidation = withValidator(() => {
                 custom: {
                     options: async (email) => {
                         const user: UserWithConfirmedViewModel | null = await usersRepository.getUserWithConfirmationByEmail(email);
-                        if (!user) {
-                            throw Error("email doesnt exist")
+                        if (user) {
+                            throw Error("email already exist")
                         }
                     },
                 },
