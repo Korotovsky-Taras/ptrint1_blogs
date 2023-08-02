@@ -118,6 +118,15 @@ export const usersRepository = {
             return null;
         });
     },
+    async getUserByEmail(email: string): Promise<UserViewModel | null> {
+        return withMongoLogger<UserViewModel | null>(async () => {
+            const user: UserMongoModel | null = await usersCollection.findOne({ email })
+            if (user) {
+                return UsersDto.user(user)
+            }
+            return null;
+        });
+    },
     async getAuthUserById(userId: string): Promise<AuthMeViewModel | null> {
         return withMongoLogger<AuthMeViewModel | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({_id: new ObjectId(userId)})

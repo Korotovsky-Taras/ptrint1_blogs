@@ -1,5 +1,28 @@
 import {withValidator} from "../utils/withValidator";
 import {checkSchema} from "express-validator";
+import {usersRepository} from "../repositories/users-repository";
+import {userCreateValidation} from "./user-create-validation";
+
+
+export const authRegistrationValidation = withValidator(() => {
+    return [
+        ...userCreateValidation,
+        checkSchema({
+            email: {
+                in: ['body'],
+                trim: true,
+                custom: {
+                    options: async (email) => {
+                        const res = await usersRepository.getUserByEmail(email);
+                        if (res != null) {
+                            throw Error("email already in use")
+                        }
+                    },
+                },
+            }
+        }),
+    ]
+})
 
 export const authEmailValidation = withValidator(() => {
     return [

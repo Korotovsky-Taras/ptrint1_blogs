@@ -2,8 +2,11 @@ import {IAuthRouterController, Route, RouterMethod} from "../types";
 import {authRouterController} from "../controllers/AuthRouterController";
 import {loginCreationValidator} from "../middlewares/login-create-validation";
 import {authTokenValidation} from "../middlewares/auth-token-validation";
-import {userCreateValidation} from "../middlewares/user-create-validation";
-import {authCodeValidation, authEmailValidation} from "../middlewares/auth-registration-validation";
+import {
+    authCodeValidation,
+    authEmailValidation,
+    authRegistrationValidation
+} from "../middlewares/auth-registration-validation";
 
 
 export const authLoginRoute: Route<IAuthRouterController> = {
@@ -32,7 +35,7 @@ export const authRegistrationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registration',
     middlewares: [
-        userCreateValidation
+        authRegistrationValidation
     ]
 }
 
