@@ -41,10 +41,11 @@ export const UsersDto = {
             createdAt,
         }
     },
-    userWithConfirmation(userModel: UserMongoModel): UserWithConfirmedViewModel {
+    userWithConfirmation(userModel: UserMongoModel, confirmationCode: string): UserWithConfirmedViewModel {
         return {
             ...UsersDto.user(userModel),
-            emailConfirmation: userModel.emailConfirmation,
+            confirmed: userModel.confirmed,
+            confirmationCode: confirmationCode,
         }
     },
     toRepoQuery(query: UserPaginationQueryModel): UserPaginationRepositoryModel {

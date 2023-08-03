@@ -1,4 +1,5 @@
 import {User} from "./users";
+import {WithId} from "mongodb";
 
 export type AuthLoginModel = {
     loginOrEmail: string,
@@ -32,3 +33,11 @@ export type AuthMeViewModel = {
     login: string,
     userId: string
 }
+
+export type AuthConfirmation = {
+    userId: string,
+    expiredIn: string,
+    code: string,
+}
+
+export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;

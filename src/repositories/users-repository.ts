@@ -2,7 +2,6 @@ import {withMongoLogger} from "../utils/withMongoLogger";
 import {
     User,
     UserCreateModel,
-    UserEmailConfirmation,
     UserEncodedPassword,
     UserListViewModel,
     UserMongoModel,
@@ -11,11 +10,17 @@ import {
     UserViewModel,
     UserWithConfirmedViewModel
 } from "../types";
-import {usersCollection} from "../db";
+import {authConfirmationCollection, usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
-import {AuthLoginModel, AuthMeViewModel, AuthTokenPass} from "../types/login";
+import {
+    AuthConfirmation,
+    AuthConfirmationMongoModel,
+    AuthLoginModel,
+    AuthMeViewModel,
+    AuthTokenPass
+} from "../types/login";
 import {Filter, ObjectId} from "mongodb";
 import {AuthDto} from "../dto/auth.dto";
 import {randomUUID} from "crypto";
@@ -57,7 +62,7 @@ export const usersRepository = {
                 login: model.login,
                 password,
                 createdAt: (new Date()).toISOString(),
-                emailConfirmation: null
+                confirmed: true
             }
 
             const user = await usersCollection.insertOne(newUser)
@@ -78,26 +83,24 @@ export const usersRepository = {
             }
 
             const password: UserEncodedPassword = usersRepository._hashPassword(model.password);
-            const confirmation: UserEmailConfirmation = usersRepository._createEmailConfirmation();
 
             const newUser: User = {
                 email: model.email,
                 login: model.login,
                 password,
                 createdAt: (new Date()).toISOString(),
-                emailConfirmation: {
-                    code: confirmation.code,
-                    expiresIn: confirmation.expiresIn,
-                    confirmed: confirmation.confirmed,
-                }
+                confirmed: false
             }
 
-            const user = await usersCollection.insertOne(newUser)
+            const user = await usersCollection.insertOne(newUser);
+
+            const confirmation: AuthConfirmation = usersRepository._createEmailConfirmation(user.insertedId.toString());
+            await authConfirmationCollection.insertOne(confirmation);
 
             return UsersDto.userWithConfirmation({
                 _id: user.insertedId,
                 ...newUser,
-            })
+            }, confirmation.code)
         })
     },
     async deleteUserById(userId: string): Promise<boolean> {
@@ -122,16 +125,23 @@ export const usersRepository = {
         return withMongoLogger<UserWithConfirmedViewModel | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({ email })
             if (user) {
-                return UsersDto.userWithConfirmation(user)
+                const userId = user._id.toString();
+                const authConfirmation: AuthConfirmationMongoModel | null = await authConfirmationCollection.findOne({ userId })
+                if (authConfirmation) {
+                    return UsersDto.userWithConfirmation(user, authConfirmation.code)
+                }
             }
             return null;
         });
     },
     async getUserByConfirmationCode(code: string): Promise<UserViewModel | null> {
         return withMongoLogger<UserViewModel | null>(async () => {
-            const user: UserMongoModel | null = await usersCollection.findOne({"emailConfirmation.code": code})
-            if (user) {
-                return UsersDto.user(user)
+            const authConfirmation: AuthConfirmationMongoModel | null = await authConfirmationCollection.findOne({ code })
+            if (authConfirmation) {
+                const user: UserMongoModel | null = await usersCollection.findOne({ _id: new ObjectId(authConfirmation.userId) })
+                if (user) {
+                    return UsersDto.user(user)
+                }
             }
             return null;
         });
@@ -156,12 +166,15 @@ export const usersRepository = {
     },
     async verifyUserWithConfirmationCode(code: string): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
-            const user: UserMongoModel | null = await usersCollection.findOne({"emailConfirmation.code": code})
-            if (user && user.emailConfirmation) {
-                const isVerified = usersRepository._verifyConfirmationCode(user.emailConfirmation);
-                if (isVerified) {
-                    await usersCollection.updateOne(user, {$set: { emailConfirmation: null }})
-                    return true;
+            const authConfirmation: AuthConfirmationMongoModel | null = await authConfirmationCollection.findOne({ code })
+            if (authConfirmation) {
+                const user : UserMongoModel | null = await usersCollection.findOne({_id: new ObjectId(authConfirmation.userId)});
+                if (user && !user.confirmed) {
+                    const isVerified = usersRepository._verifyConfirmation(authConfirmation);
+                    if (isVerified) {
+                        await usersCollection.updateOne(user, {$set: { confirmed: true }})
+                        return true;
+                    }
                 }
             }
             return false;
@@ -170,12 +183,12 @@ export const usersRepository = {
     async createUserReplaceConfirmationCode(email: string): Promise<UserReplaceConfirmationData | null> {
         return withMongoLogger<UserReplaceConfirmationData | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({ email });
-            if (user && user.emailConfirmation) {
-                const confirmation: UserEmailConfirmation = usersRepository._createEmailConfirmation();
-                await usersCollection.updateOne(user, {$set: {
-                        "emailConfirmation.code": confirmation.code,
-                        "emailConfirmation.expiresIn": confirmation.expiresIn,
-                        "emailConfirmation.confirmed": confirmation.confirmed,
+            if (user && !user.confirmed) {
+                const userId = user._id.toString();
+                const confirmation: AuthConfirmation = usersRepository._createEmailConfirmation(userId);
+                await authConfirmationCollection.updateOne({ userId }, {$set: {
+                        code: confirmation.code,
+                        expiredIn: confirmation.expiredIn,
                     }})
                 return {
                     email,
@@ -202,18 +215,18 @@ export const usersRepository = {
     _createPasswordHash(password: string, salt: string): string {
         return crypto.pbkdf2Sync(password, salt, 100, 24, 'sha512').toString('hex');
     },
-    _verifyConfirmationCode(confirmation: UserEmailConfirmation): boolean {
-        const expTime = new Date(confirmation.expiresIn).getTime();
+    _verifyConfirmation(confirmation: AuthConfirmation): boolean {
+        const expTime = new Date(confirmation.expiredIn).getTime();
         const currentTime = new Date().getTime();
-        return !confirmation.confirmed && currentTime < expTime;
+        return currentTime < expTime;
     },
-    _createEmailConfirmation(): UserEmailConfirmation  {
+    _createEmailConfirmation(userId: string): AuthConfirmation  {
         let expiredDate: Date = new Date();
         expiredDate.setTime(expiredDate.getTime() + 3 * 1000 * 60);
         return {
-            expiresIn: expiredDate.toISOString(),
+            userId,
+            expiredIn: expiredDate.toISOString(),
             code: randomUUID(),
-            confirmed: false
         }
     },
 }

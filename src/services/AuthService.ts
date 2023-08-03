@@ -30,8 +30,8 @@ class AuthService implements IAuthService {
     async registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel> {
         const user: UserWithConfirmedViewModel | null = await userService.createUserWithVerification(model);
 
-        if (user && user.emailConfirmation) {
-            await authMailManager.sendRegistrationMail(user.email, user.emailConfirmation.code);
+        if (user && !user.confirmed) {
+            await authMailManager.sendRegistrationMail(user.email, user.confirmationCode);
             return {
                 success: true
             }
