@@ -58,7 +58,7 @@ export const authEmailResendingValidation = withValidator(() => {
                         const user: UserWithConfirmedViewModel | null = await usersRepository.getUserWithConfirmationByEmail(email);
                         if (!user) {
                             throw Error("email doesnt exist")
-                        } else if (user && user.emailConfirmation && user.emailConfirmation.confirmed) {
+                        } else if (!user.emailConfirmation) {
                             throw Error("email already confirmed")
                         }
                     },
