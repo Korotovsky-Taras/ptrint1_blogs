@@ -134,16 +134,14 @@ export const usersRepository = {
             return null;
         });
     },
-    async getUserByConfirmationCode(code: string): Promise<UserViewModel | null> {
-        return withMongoLogger<UserViewModel | null>(async () => {
+    async isConfirmationCodeConfirmed(code: string): Promise<boolean> {
+        return withMongoLogger<boolean>(async () => {
             const authConfirmation: AuthConfirmationMongoModel | null = await authConfirmationCollection.findOne({ code })
             if (authConfirmation) {
                 const user: UserMongoModel | null = await usersCollection.findOne({ _id: new ObjectId(authConfirmation.userId) })
-                if (user) {
-                    return UsersDto.user(user)
-                }
+                return user != null && user.confirmed
             }
-            return null;
+            return false;
         });
     },
     async getUserByLogin(login: string): Promise<UserViewModel | null> {

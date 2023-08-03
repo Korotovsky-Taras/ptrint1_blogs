@@ -35,8 +35,8 @@ export const authCodeValidation = withValidator(() => {
                 },
                 custom: {
                     options: async (code) => {
-                        const res = await usersRepository.getUserByConfirmationCode(code);
-                        if (res === null) {
+                        const isCodeConfirmed = await usersRepository.isConfirmationCodeConfirmed(code);
+                        if (isCodeConfirmed) {
                             throw Error("code is not valid")
                         }
                     },
