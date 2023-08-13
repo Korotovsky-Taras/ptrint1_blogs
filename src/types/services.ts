@@ -8,7 +8,7 @@ import {
     AuthRegisterModel,
     AuthResendingEmailModel,
     AuthServiceResultModel,
-    AuthToken
+    AuthTokens
 } from "./login";
 import {CommentUpdateModel, CommentViewModel} from "./comments";
 import {Status} from "./custom";
@@ -34,7 +34,9 @@ export interface IUsersService {
 }
 
 export interface IAuthService {
-    login(model: AuthLoginModel): Promise<AuthToken | null>
+    login(model: AuthLoginModel): Promise<AuthTokens | null>
+    logout(userId: string): Promise<boolean>
+    refreshTokens(userId: string): Promise<AuthTokens | null>
     registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel>
     verifyConfirmationCode(model: AuthRegisterConfirmationModel): Promise<AuthServiceResultModel>
     tryResendConfirmationCode(model: AuthResendingEmailModel): Promise<AuthServiceResultModel>,

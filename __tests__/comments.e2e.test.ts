@@ -10,7 +10,7 @@ import {
 } from "./utils";
 import {BlogViewModel, ErrorsMessage, PostViewModel, Status, UserViewModel} from "../src/types";
 import {CommentCreateModel, CommentUpdateModel, CommentViewModel} from "../src/types/comments";
-import {createAuthToken} from "../src/utils/authToken";
+import {createAccessToken} from "../src/utils/tokenAdapter";
 
 
 let blog: BlogViewModel | null = null;
@@ -44,7 +44,7 @@ describe("comments testing", () => {
 
             const result = await requestApp
                 .post(`/posts/${post.id}/comments`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .set('Content-Type', 'application/json')
                 .send({} as CommentCreateModel)
                 .expect(Status.BAD_REQUEST);
@@ -88,7 +88,7 @@ describe("comments testing", () => {
              const newContent  = generateString(20);
              await requestApp
                 .put(`/comments/${comment.id}`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .set('Content-Type', 'application/json')
                 .send({
                     content: newContent
@@ -120,7 +120,7 @@ describe("comments testing", () => {
             await requestApp
                 .put(`/comments/${comment.id}`)
                 .set('Content-Type', 'application/json')
-                .set('Authorization', 'Bearer ' + createAuthToken(newUser.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(newUser.id))
                 .send({
                     content: generateString(20)
                 } as CommentUpdateModel)
@@ -142,7 +142,7 @@ describe("comments testing", () => {
             await requestApp
                 .put(`/comments/${fakeCommentId}`)
                 .set('Content-Type', 'application/json')
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .send({
                     content: generateString(20)
                 } as CommentUpdateModel)
@@ -151,7 +151,7 @@ describe("comments testing", () => {
             await requestApp
                 .delete(`/comments/${fakeCommentId}`)
                 .set('Content-Type', 'application/json')
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .expect(Status.NOT_FOUND);
 
         }
@@ -167,7 +167,7 @@ describe("comments testing", () => {
         if (post && blog && user && comment) {
             await requestApp
                 .put(`/comments/${comment.id}`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .send({
                     content: generateString(6)
                 } as CommentUpdateModel)
@@ -175,7 +175,7 @@ describe("comments testing", () => {
 
             await requestApp
                 .put(`/comments/${comment.id}`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .send({
                     content: generateString(400)
                 } as CommentUpdateModel)
@@ -195,7 +195,7 @@ describe("comments testing", () => {
         if (post && blog && user && comment) {
             await requestApp
                 .delete(`/comments/${comment.id}`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .expect(Status.NO_CONTENT);
 
             await requestApp

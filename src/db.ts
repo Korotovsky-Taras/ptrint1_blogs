@@ -1,8 +1,8 @@
 import {MongoClient, ServerApiVersion} from "mongodb";
-import {Blog, Log, Post, User} from "./types";
+import {Blog, Post, User} from "./types";
 import {appConfig} from "./utils/config";
 import {Comment} from "./types/comments";
-import {AuthConfirmation} from "./types/login";
+import {AuthConfirmation, AuthSession} from "./types/login";
 
 const {mongoUrl} = appConfig;
 
@@ -18,10 +18,11 @@ const db = client.db(process.env.NODE_ENV);
 
 export const blogsCollection = db.collection<Blog>("blogs");
 export const usersCollection = db.collection<User>("users");
+export const authSessionsCollection = db.collection<AuthSession>("authSession");
+export const authConfirmationCollection = db.collection<AuthConfirmation>("authConfirmation");
+
 export const postsCollection = db.collection<Post>("posts");
 export const commentsCollection = db.collection<Comment>("comments");
-export const authConfirmationCollection = db.collection<AuthConfirmation>("authConfirmation");
-export const logsCollection = db.collection<Log>("logs");
 
 export const connectDb = async () => {
     try {

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import {appConfig} from "./config";
-import {AuthTokenPass} from "../types/login";
+import {AuthUserPass} from "../types/login";
 import {withUserId} from "./withUserId";
 import {WithUserId} from "../types";
 import {BinaryToTextEncoding} from "crypto";
@@ -9,7 +9,7 @@ const {tokenSecret} = appConfig;
 
 const signatureDigest: BinaryToTextEncoding = 'base64url';
 
-export const createAuthToken = (userId: string) : string => {
+export const createAccessToken = (userId: string) : string => {
     const head = Buffer.from(
         JSON.stringify({ alg: 'HS256', typ: 'jwt' })
     ).toString('base64');
@@ -24,7 +24,7 @@ export const createAuthToken = (userId: string) : string => {
     return `${head}.${body}.${signature}`
 }
 
-export const verifyAuthToken = (token: string) : AuthTokenPass | null => {
+export const verifyAccessToken = (token: string) : AuthUserPass | null => {
     let tokenParts = token.split('.');
 
     if (tokenParts.length < 3) {

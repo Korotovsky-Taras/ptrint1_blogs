@@ -6,25 +6,25 @@ import {
     AuthRegisterModel,
     AuthResendingEmailModel,
     AuthServiceResultModel,
-    AuthToken,
-    AuthTokenPass
+    AuthTokens
 } from "../types/login";
 import {usersRepository} from "../repositories/users-repository";
-import {createAuthToken} from "../utils/authToken";
 import {authMailManager} from "../managers/authMailManager";
 import {userService} from "./UsersService";
 
 
 class AuthService implements IAuthService {
 
-    async login(model: AuthLoginModel): Promise<AuthToken | null> {
-        const tokenPath: AuthTokenPass | null = await usersRepository.checkUserAuth(model);
-        if (tokenPath) {
-            return {
-                token: createAuthToken(tokenPath.userId)
-            };
-        }
-        return null;
+    async login(model: AuthLoginModel): Promise<AuthTokens | null> {
+        return usersRepository.loginUser(model);
+    }
+
+    async logout(userId: string): Promise<boolean> {
+        return usersRepository.logoutUser(userId);
+    }
+
+    async refreshTokens(userId: string): Promise<AuthTokens | null> {
+        return usersRepository.refreshTokens(userId);
     }
 
     async registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel> {

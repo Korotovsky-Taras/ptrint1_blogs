@@ -9,7 +9,7 @@ import {
 } from "./utils";
 import {BlogViewModel, PostViewModel, Status, UserViewModel} from "../src/types";
 import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
-import {createAuthToken} from "../src/utils/authToken";
+import {createAccessToken} from "../src/utils/tokenAdapter";
 
 let blog: BlogViewModel | null = null;
 let post: PostViewModel | null = null;
@@ -37,7 +37,7 @@ describe("posts testing", () => {
         if (blog && post && user) {
             await requestApp
                 .post(`/posts/${post.id}/comments`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .set('Content-Type', 'application/json')
                 .send({
                     content: generateString(20)
@@ -56,7 +56,7 @@ describe("posts testing", () => {
         if (blog && post && user) {
             await requestApp
                 .post(`/posts/${post.id}/comments`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .set('Content-Type', 'application/json')
                 .send({
                     content: generateString(6)
@@ -65,7 +65,7 @@ describe("posts testing", () => {
 
             await requestApp
                 .post(`/posts/${post.id}/comments`)
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .set('Content-Type', 'application/json')
                 .send({
                     content: generateString(400)
@@ -104,7 +104,7 @@ describe("posts testing", () => {
             await requestApp
                 .post(`/posts/${fakePostId}/comments`)
                 .set('Content-Type', 'application/json')
-                .set('Authorization', 'Bearer ' + createAuthToken(user.id))
+                .set('Authorization', 'Bearer ' + createAccessToken(user.id))
                 .send({
                     content: generateString(20)
                 } as CommentCreateModel)

@@ -1,12 +1,13 @@
 import {IAuthRouterController, Route, RouterMethod} from "../types";
 import {authRouterController} from "../controllers/AuthRouterController";
 import {loginCreationValidator} from "../middlewares/login-create-validation";
-import {authTokenValidation} from "../middlewares/auth-token-validation";
+import {authTokenAccessValidation} from "../middlewares/auth-token-access-validation";
 import {
     authCodeValidation,
     authEmailResendingValidation,
     authRegistrationValidation
 } from "../middlewares/auth-registration-validation";
+import {authTokenRefreshValidation} from "../middlewares/auth-token-refresh-validation";
 
 
 export const authLoginRoute: Route<IAuthRouterController> = {
@@ -19,13 +20,33 @@ export const authLoginRoute: Route<IAuthRouterController> = {
     ]
 }
 
+export const authLogoutRoute: Route<IAuthRouterController> = {
+    route: "/auth/logout",
+    method: RouterMethod.POST,
+    controller: authRouterController,
+    action: 'logout',
+    middlewares: [
+        authTokenRefreshValidation,
+    ]
+}
+
+export const authRefreshRoute: Route<IAuthRouterController> = {
+    route: "/auth/refresh-token",
+    method: RouterMethod.POST,
+    controller: authRouterController,
+    action: 'refreshToken',
+    middlewares: [
+        authTokenRefreshValidation,
+    ]
+}
+
 export const authMeRoute: Route<IAuthRouterController> = {
     route: "/auth/me",
     method: RouterMethod.GET,
     controller: authRouterController,
     action: 'me',
     middlewares: [
-        authTokenValidation
+        authTokenAccessValidation
     ]
 }
 
@@ -64,5 +85,7 @@ export const authRoutes: Route<IAuthRouterController>[] = [
     authRegistrationConfirmationRoute,
     authRegistrationRoute,
     authLoginRoute,
+    authLogoutRoute,
+    authRefreshRoute,
     authMeRoute
 ];

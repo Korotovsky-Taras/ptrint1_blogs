@@ -9,7 +9,7 @@ import {
 } from "../src/types";
 import supertest from "supertest";
 import {app} from "../src/app";
-import {createAuthToken} from "../src/utils/authToken";
+import {createAccessToken} from "../src/utils/tokenAdapter";
 import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
 
 export const requestApp = supertest(app);
@@ -101,7 +101,7 @@ export const createUser = async (model: UserCreateModel) : Promise<UserViewModel
 export const createComment = async (postId: string, userId: string, model: CommentCreationTestModel = validCommentData) : Promise<CommentViewModel> => {
     const result = await requestApp
         .post(`/posts/${postId}/comments`)
-        .set('Authorization', 'Bearer ' + createAuthToken(userId))
+        .set('Authorization', 'Bearer ' + createAccessToken(userId))
         .set('Content-Type', 'application/json')
         .send({
             ...model

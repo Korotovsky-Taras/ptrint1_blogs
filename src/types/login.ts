@@ -6,6 +6,10 @@ export type AuthLoginModel = {
     password: string,
 }
 
+export type AuthLogoutModel = {
+    userId: string
+}
+
 export type AuthRegisterModel = Pick<User, 'login' | 'email' > & { password: string }
 
 export type AuthRegisterConfirmationModel = {
@@ -20,12 +24,13 @@ export type AuthServiceResultModel = {
     success: boolean
 }
 
-export type AuthTokenPass = {
+export type AuthUserPass = {
     userId: string
 }
 
-export type AuthToken = {
-    token: string
+export type AuthTokens = {
+    accessToken: Readonly<string>,
+    refreshToken: Readonly<string>,
 }
 
 export type AuthMeViewModel = {
@@ -38,6 +43,12 @@ export type AuthConfirmation = {
     userId: string,
     expiredIn: string,
     code: string,
+}
+
+export type AuthSession = {
+    userId: string,
+    expiredIn: string,
+    uuid: string,
 }
 
 export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;

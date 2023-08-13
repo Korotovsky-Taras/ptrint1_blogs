@@ -7,17 +7,42 @@ import {
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthServiceResultModel,
-    AuthToken
+    AuthTokens
 } from "../types/login";
+import {authTokenManager} from "../managers/aurhTokenManager";
 
 
 class AuthRouterController implements IAuthRouterController {
     async login(req: RequestWithBody<AuthLoginModel>, res: Response, next: NextFunction) {
-        const auth: AuthToken | null = await authService.login(req.body);
+        const auth: AuthTokens | null = await authService.login(req.body);
         if (auth) {
+            authTokenManager.applyRefreshToken(res, auth.refreshToken);
             return res.status(Status.OK).send({
-                accessToken: auth.token
+                accessToken: auth.accessToken,
             })
+        }
+        return res.sendStatus(Status.UNATHORIZED)
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction) {
+        if (req.userId) {
+            const isLogout : boolean = await authService.logout(req.userId)
+            if (isLogout) {
+                return res.sendStatus(Status.NO_CONTENT)
+            }
+        }
+        return res.sendStatus(Status.UNATHORIZED)
+    }
+
+    async refreshToken(req: Request, res: Response, next: NextFunction) {
+        if (req.userId) {
+            const auth: AuthTokens | null = await authService.refreshTokens(req.userId);
+            if (auth) {
+                authTokenManager.applyRefreshToken(res, auth.refreshToken);
+                return res.status(Status.OK).send({
+                    accessToken: auth.accessToken
+                })
+            }
         }
         return res.sendStatus(Status.UNATHORIZED)
     }

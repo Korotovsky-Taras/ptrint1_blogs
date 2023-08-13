@@ -10,7 +10,7 @@ import {
     UserViewModel,
     UserWithConfirmedViewModel
 } from "../types";
-import {authConfirmationCollection, usersCollection} from "../db";
+import {authConfirmationCollection, authSessionsCollection, usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
@@ -19,11 +19,14 @@ import {
     AuthConfirmationMongoModel,
     AuthLoginModel,
     AuthMeViewModel,
-    AuthTokenPass
+    AuthSession,
+    AuthTokens,
+    AuthUserPass
 } from "../types/login";
-import {Filter, ObjectId} from "mongodb";
+import {Filter, ModifyResult, ObjectId} from "mongodb";
 import {AuthDto} from "../dto/auth.dto";
 import {randomUUID} from "crypto";
+import {createAccessToken} from "../utils/tokenAdapter";
 
 
 export const usersRepository = {
@@ -109,15 +112,64 @@ export const usersRepository = {
             return result.deletedCount === 1;
         });
     },
-    async checkUserAuth(model: AuthLoginModel): Promise<AuthTokenPass | null> {
-        return withMongoLogger<AuthTokenPass | null>(async () => {
+    async loginUser(model: AuthLoginModel): Promise<AuthTokens | null> {
+        return withMongoLogger<AuthTokens | null>(async () => {
             const user: UserMongoModel | null = await usersCollection.findOne({$or: [{email: model.loginOrEmail}, {login: model.loginOrEmail}]})
-            if (user) {
+            if (user && user.confirmed) {
                 const isVerified = usersRepository._verifyPassword(model.password, user.password.salt, user.password.hash);
                 if (isVerified) {
-                    return AuthDto.toAuthTokenPath(user)
+                    const userId = user._id.toString();
+                    return usersRepository.refreshTokens(userId);
                 }
             }
+            return null;
+        });
+    },
+    async logoutUser(userId: string): Promise<boolean> {
+        return withMongoLogger<boolean>(async () => {
+            const result: ModifyResult<AuthSession> = await authSessionsCollection.findOneAndUpdate({userId}, {$set: {
+                    expiredIn: new Date().toISOString()
+                }})
+            return !!result.ok;
+        });
+    },
+    async refreshTokens(userId: string): Promise<AuthTokens | null> {
+        return withMongoLogger<AuthTokens | null>(async () => {
+            const authSession = usersRepository._createSessionUuid(userId);
+
+            const sessionUpdateResult: ModifyResult<AuthSession> = await authSessionsCollection.findOneAndUpdate(
+                { userId },
+                { $set: authSession },
+                { upsert: true }
+            );
+
+            if (sessionUpdateResult.ok) {
+                return {
+                    accessToken: createAccessToken(userId),
+                    refreshToken: authSession.uuid,
+                };
+            }
+            return null;
+        });
+    },
+    async checkRefreshToken(uuid: string): Promise<AuthUserPass | null> {
+        return withMongoLogger<AuthUserPass | null>(async () => {
+            const authSession: AuthSession | null =  await authSessionsCollection.findOne({uuid});
+
+            if (!authSession) {
+                return null;
+            }
+
+            const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(authSession.userId)});
+
+            if (!user || !user.confirmed) {
+                return null;
+            }
+
+            if (usersRepository._verifyExpiredDate(authSession)) {
+                return AuthDto.toAuthUserPass(user)
+            }
+
             return null;
         });
     },
@@ -168,7 +220,7 @@ export const usersRepository = {
             if (authConfirmation) {
                 const user : UserMongoModel | null = await usersCollection.findOne({_id: new ObjectId(authConfirmation.userId)});
                 if (user && !user.confirmed) {
-                    const isVerified = usersRepository._verifyConfirmation(authConfirmation);
+                    const isVerified = usersRepository._verifyExpiredDate(authConfirmation);
                     if (isVerified) {
                         await usersCollection.updateOne(user, {$set: { confirmed: true }})
                         return true;
@@ -213,11 +265,6 @@ export const usersRepository = {
     _createPasswordHash(password: string, salt: string): string {
         return crypto.pbkdf2Sync(password, salt, 100, 24, 'sha512').toString('hex');
     },
-    _verifyConfirmation(confirmation: AuthConfirmation): boolean {
-        const expTime = new Date(confirmation.expiredIn).getTime();
-        const currentTime = new Date().getTime();
-        return currentTime < expTime;
-    },
     _createEmailConfirmation(userId: string): AuthConfirmation  {
         let expiredDate: Date = new Date();
         expiredDate.setTime(expiredDate.getTime() + 3 * 1000 * 60);
@@ -226,5 +273,19 @@ export const usersRepository = {
             expiredIn: expiredDate.toISOString(),
             code: randomUUID(),
         }
+    },
+    _createSessionUuid(userId: string): AuthSession {
+        let expiredDate: Date = new Date();
+        expiredDate.setDate(expiredDate.getDate() + 1);
+        return {
+            userId,
+            expiredIn: expiredDate.toISOString(),
+            uuid: randomUUID()
+        };
+    },
+    _verifyExpiredDate(session: {expiredIn: string}): boolean  {
+        const expTime = new Date(session.expiredIn).getTime();
+        const currentTime = new Date().getTime();
+        return currentTime < expTime;
     },
 }
