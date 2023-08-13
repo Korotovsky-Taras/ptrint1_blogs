@@ -11,13 +11,13 @@ const signatureDigest: BinaryToTextEncoding = 'base64url';
 
 export const createAccessToken = (userId: string) : AuthAccessToken => {
     let expiredDate: Date = new Date();
-    expiredDate.setTime(expiredDate.getTime() + 3 * 1000 * 60);
+    expiredDate.setTime(expiredDate.getTime() + 10 * 1000);
     return createToken(userId, expiredDate.toISOString())
 }
 
 export const createRefreshToken = (userId: string) : AuthRefreshToken => {
     let expiredDate: Date = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 1);
+    expiredDate.setTime(expiredDate.getTime() + 20 * 1000);
     return createToken(userId, expiredDate.toISOString())
 }
 
