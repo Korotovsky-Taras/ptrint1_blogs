@@ -77,3 +77,11 @@ export interface Route<T> {
     action: keyof T;
     middlewares?: RouteMiddleware[]
 }
+
+export type WithUserId = {
+    userId: string,
+}
+
+export type WithExpiredIn = {
+    expiredIn: string,
+}

@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import {Status} from "../types";
-import {verifyAccessToken} from "../utils/tokenAdapter";
+import {verifyToken} from "../utils/tokenAdapter";
 import {AuthUserPass} from "../types/login";
 
 export const authTokenAccessValidation = (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +9,7 @@ export const authTokenAccessValidation = (req: Request, res: Response, next: Nex
         const authorizationData = authorization.split(" ")
         if (authorizationData.length > 1 && authorizationData[0] === 'Bearer') {
             const bearerToken = authorizationData[1];
-            const tokenPass: AuthUserPass | null = verifyAccessToken(bearerToken);
+            const tokenPass: AuthUserPass | null = verifyToken(bearerToken);
             if (tokenPass) {
                 req.userId = tokenPass.userId;
                 return next();

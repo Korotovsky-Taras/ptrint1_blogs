@@ -4,6 +4,7 @@ import {UserCreateModel, UserViewModel} from "./users";
 import {
     AuthLoginModel,
     AuthMeViewModel,
+    AuthRefreshToken,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthResendingEmailModel,
@@ -35,7 +36,7 @@ export interface IUsersService {
 
 export interface IAuthService {
     login(model: AuthLoginModel): Promise<AuthTokens | null>
-    logout(userId: string): Promise<boolean>
+    logout(userId: string): Promise<AuthRefreshToken | null>
     refreshTokens(userId: string): Promise<AuthTokens | null>
     registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel>
     verifyConfirmationCode(model: AuthRegisterConfirmationModel): Promise<AuthServiceResultModel>

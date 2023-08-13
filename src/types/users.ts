@@ -10,10 +10,6 @@ export type User = {
     confirmed: boolean,
 }
 
-export type WithUserId = {
-    userId: string,
-}
-
 export type UserEncodedPassword = {
     salt: string,
     hash: string

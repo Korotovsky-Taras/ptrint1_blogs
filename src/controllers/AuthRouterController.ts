@@ -4,6 +4,7 @@ import {authService} from "../services/AuthService";
 import {
     AuthLoginModel,
     AuthMeViewModel,
+    AuthRefreshToken,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthServiceResultModel,
@@ -26,8 +27,9 @@ class AuthRouterController implements IAuthRouterController {
 
     async logout(req: Request, res: Response, next: NextFunction) {
         if (req.userId) {
-            const isLogout : boolean = await authService.logout(req.userId)
-            if (isLogout) {
+            const refreshToken: AuthRefreshToken | null = await authService.logout(req.userId);
+            if (refreshToken) {
+                authTokenManager.applyRefreshToken(res, refreshToken);
                 return res.sendStatus(Status.NO_CONTENT)
             }
         }

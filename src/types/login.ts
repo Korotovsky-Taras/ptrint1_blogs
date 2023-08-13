@@ -28,9 +28,12 @@ export type AuthUserPass = {
     userId: string
 }
 
+export type AuthAccessToken = Readonly<string>;
+export type AuthRefreshToken = Readonly<string>;
+
 export type AuthTokens = {
-    accessToken: Readonly<string>,
-    refreshToken: Readonly<string>,
+    accessToken: AuthAccessToken,
+    refreshToken: AuthRefreshToken,
 }
 
 export type AuthMeViewModel = {
@@ -47,8 +50,7 @@ export type AuthConfirmation = {
 
 export type AuthSession = {
     userId: string,
-    expiredIn: string,
-    uuid: string,
+    token: string,
 }
 
 export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;

@@ -1,20 +1,36 @@
 import crypto from "node:crypto";
 import {appConfig} from "./config";
-import {AuthUserPass} from "../types/login";
-import {withUserId} from "./withUserId";
-import {WithUserId} from "../types";
+import {AuthAccessToken, AuthRefreshToken, AuthUserPass} from "../types/login";
+import {withExpiredIn, withUserId} from "./withUserId";
+import {WithExpiredIn, WithUserId} from "../types";
 import {BinaryToTextEncoding} from "crypto";
 
 const {tokenSecret} = appConfig;
 
 const signatureDigest: BinaryToTextEncoding = 'base64url';
 
-export const createAccessToken = (userId: string) : string => {
+export const createAccessToken = (userId: string) : AuthAccessToken => {
+    let expiredDate: Date = new Date();
+    expiredDate.setTime(expiredDate.getTime() + 3 * 1000 * 60);
+    return createToken(userId, expiredDate.toISOString())
+}
+
+export const createRefreshToken = (userId: string) : AuthRefreshToken => {
+    let expiredDate: Date = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 1);
+    return createToken(userId, expiredDate.toISOString())
+}
+
+export const createExpiredRefreshToken = (userId: string) : AuthRefreshToken => {
+    return createToken(userId, new Date().toISOString())
+}
+
+const createToken = (userId: string, expiredIn: string) : string => {
     const head = Buffer.from(
         JSON.stringify({ alg: 'HS256', typ: 'jwt' })
     ).toString('base64');
     const body = Buffer.from(
-        JSON.stringify({ userId })
+        JSON.stringify({ userId, expiredIn })
     ).toString('base64');
     let signature = crypto
         .createHmac('SHA256', tokenSecret)
@@ -24,7 +40,7 @@ export const createAccessToken = (userId: string) : string => {
     return `${head}.${body}.${signature}`
 }
 
-export const verifyAccessToken = (token: string) : AuthUserPass | null => {
+export const verifyToken = (token: string) : AuthUserPass | null => {
     let tokenParts = token.split('.');
 
     if (tokenParts.length < 3) {
@@ -34,6 +50,7 @@ export const verifyAccessToken = (token: string) : AuthUserPass | null => {
     const buffer = Buffer.from(tokenParts[1], 'base64');
     const payload = JSON.parse(buffer.toString());
     const user: WithUserId | null = withUserId(payload);
+    const date: WithExpiredIn | null = withExpiredIn(payload);
 
     let signature = crypto
         .createHmac('SHA256', tokenSecret)
@@ -41,7 +58,10 @@ export const verifyAccessToken = (token: string) : AuthUserPass | null => {
         .digest(signatureDigest);
 
 
-    if (signature === tokenParts[2] && user) {
+    const isNotExpired = date && new Date(date.expiredIn).getTime() < new Date().getTime();
+    const isSignatureEqual = signature === tokenParts[2];
+
+    if ( isNotExpired && isSignatureEqual &&  user) {
         return {
             userId: user.userId,
         }

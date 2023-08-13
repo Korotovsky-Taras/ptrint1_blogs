@@ -10,7 +10,7 @@ import {
     UserViewModel,
     UserWithConfirmedViewModel
 } from "../types";
-import {authConfirmationCollection, authSessionsCollection, usersCollection} from "../db";
+import {authConfirmationCollection, usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
@@ -19,14 +19,13 @@ import {
     AuthConfirmationMongoModel,
     AuthLoginModel,
     AuthMeViewModel,
-    AuthSession,
-    AuthTokens,
-    AuthUserPass
+    AuthRefreshToken,
+    AuthTokens
 } from "../types/login";
-import {Filter, ModifyResult, ObjectId} from "mongodb";
+import {Filter, ObjectId} from "mongodb";
 import {AuthDto} from "../dto/auth.dto";
 import {randomUUID} from "crypto";
-import {createAccessToken} from "../utils/tokenAdapter";
+import {createAccessToken, createExpiredRefreshToken, createRefreshToken} from "../utils/tokenAdapter";
 
 
 export const usersRepository = {
@@ -125,51 +124,24 @@ export const usersRepository = {
             return null;
         });
     },
-    async logoutUser(userId: string): Promise<boolean> {
-        return withMongoLogger<boolean>(async () => {
-            const result: ModifyResult<AuthSession> = await authSessionsCollection.findOneAndUpdate({userId}, {$set: {
-                    expiredIn: new Date().toISOString()
-                }})
-            return !!result.ok;
-        });
-    },
-    async refreshTokens(userId: string): Promise<AuthTokens | null> {
-        return withMongoLogger<AuthTokens | null>(async () => {
-            const authSession = usersRepository._createSessionUuid(userId);
-
-            const sessionUpdateResult: ModifyResult<AuthSession> = await authSessionsCollection.findOneAndUpdate(
-                { userId },
-                { $set: authSession },
-                { upsert: true }
-            );
-
-            if (sessionUpdateResult.ok) {
-                return {
-                    accessToken: createAccessToken(userId),
-                    refreshToken: authSession.uuid,
-                };
+    async logoutUser(userId: string): Promise<AuthRefreshToken | null> {
+        return withMongoLogger<AuthRefreshToken | null>(async () => {
+            const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
+            if (user && user.confirmed) {
+                return createExpiredRefreshToken(userId);
             }
             return null;
         });
     },
-    async checkRefreshToken(uuid: string): Promise<AuthUserPass | null> {
-        return withMongoLogger<AuthUserPass | null>(async () => {
-            const authSession: AuthSession | null =  await authSessionsCollection.findOne({uuid});
-
-            if (!authSession) {
-                return null;
+    async refreshTokens(userId: string): Promise<AuthTokens | null> {
+        return withMongoLogger<AuthTokens | null>(async () => {
+            const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
+            if (user && user.confirmed) {
+                return {
+                    accessToken: createAccessToken(userId),
+                    refreshToken: createRefreshToken(userId),
+                };
             }
-
-            const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(authSession.userId)});
-
-            if (!user || !user.confirmed) {
-                return null;
-            }
-
-            if (usersRepository._verifyExpiredDate(authSession)) {
-                return AuthDto.toAuthUserPass(user)
-            }
-
             return null;
         });
     },
@@ -273,15 +245,6 @@ export const usersRepository = {
             expiredIn: expiredDate.toISOString(),
             code: randomUUID(),
         }
-    },
-    _createSessionUuid(userId: string): AuthSession {
-        let expiredDate: Date = new Date();
-        expiredDate.setDate(expiredDate.getDate() + 1);
-        return {
-            userId,
-            expiredIn: expiredDate.toISOString(),
-            uuid: randomUUID()
-        };
     },
     _verifyExpiredDate(session: {expiredIn: string}): boolean  {
         const expTime = new Date(session.expiredIn).getTime();

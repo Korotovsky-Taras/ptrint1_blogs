@@ -2,6 +2,7 @@ import {IAuthService, UserReplaceConfirmationData, UserWithConfirmedViewModel} f
 import {
     AuthLoginModel,
     AuthMeViewModel,
+    AuthRefreshToken,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthResendingEmailModel,
@@ -19,7 +20,7 @@ class AuthService implements IAuthService {
         return usersRepository.loginUser(model);
     }
 
-    async logout(userId: string): Promise<boolean> {
+    async logout(userId: string): Promise<AuthRefreshToken | null> {
         return usersRepository.logoutUser(userId);
     }
 
