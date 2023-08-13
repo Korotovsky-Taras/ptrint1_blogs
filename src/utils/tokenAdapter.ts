@@ -41,6 +41,10 @@ const createToken = (userId: string, expiredIn: string) : string => {
 }
 
 export const verifyToken = (token: string) : AuthUserPass | null => {
+    if (!token) {
+        return null;
+    }
+
     let tokenParts = token.split('.');
 
     if (tokenParts.length < 3) {
