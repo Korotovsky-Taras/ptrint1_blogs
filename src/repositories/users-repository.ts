@@ -10,7 +10,7 @@ import {
     UserViewModel,
     UserWithConfirmedViewModel
 } from "../types";
-import {authConfirmationCollection, usersCollection} from "../db";
+import {authConfirmationCollection, authSessionsCollection, usersCollection} from "../db";
 import {UsersDto} from "../dto/users.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import crypto from "node:crypto";
@@ -128,7 +128,9 @@ export const usersRepository = {
         return withMongoLogger<AuthRefreshToken | null>(async () => {
             const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
             if (user && user.confirmed) {
-                return createExpiredRefreshToken(userId);
+                const refreshToken = createExpiredRefreshToken(userId);
+                await authSessionsCollection.updateOne({userId}, {$set: {userId, uuid: refreshToken.uuid}}, {upsert: true})
+                return refreshToken.token;
             }
             return null;
         });
@@ -137,9 +139,12 @@ export const usersRepository = {
         return withMongoLogger<AuthTokens | null>(async () => {
             const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
             if (user && user.confirmed) {
+                const accessToken = createAccessToken(userId);
+                const refreshToken = createRefreshToken(userId);
+                await authSessionsCollection.updateOne({userId}, {$set: {userId, uuid: refreshToken.uuid}}, {upsert: true})
                 return {
-                    accessToken: createAccessToken(userId),
-                    refreshToken: createRefreshToken(userId),
+                    accessToken: accessToken.token,
+                    refreshToken: refreshToken.token,
                 };
             }
             return null;

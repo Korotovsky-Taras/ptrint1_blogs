@@ -24,8 +24,14 @@ export type AuthServiceResultModel = {
     success: boolean
 }
 
-export type AuthUserPass = {
-    userId: string
+export type AuthTokenPass = {
+    token: string,
+    uuid: string
+}
+
+export type AuthVerifiedTokenPass = {
+    userId: string,
+    uuid: string
 }
 
 export type AuthAccessToken = Readonly<string>;
@@ -50,7 +56,7 @@ export type AuthConfirmation = {
 
 export type AuthSession = {
     userId: string,
-    token: string,
+    uuid: string,
 }
 
 export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;
