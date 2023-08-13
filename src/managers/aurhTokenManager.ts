@@ -7,7 +7,7 @@ class AuthTokenManager {
     }
     getRefreshToken(req: Request): string | null {
         const cookies = req.cookies;
-        return cookies && cookies.hasOwnProperty(this.refreshTokenName) ? cookies[this.refreshTokenName] : null
+        return typeof cookies === 'object' ? cookies[this.refreshTokenName] : null
     }
 }
 
