@@ -7,7 +7,7 @@ import {
     UserCreateModel,
     UserViewModel
 } from "../src/types";
-import supertest from "supertest";
+import supertest, {Response} from "supertest";
 import {app} from "../src/app";
 import {createAccessToken} from "../src/utils/tokenAdapter";
 import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
@@ -40,6 +40,11 @@ export const validUserData: UserCreationTestModel = {
 
 export const validCommentData: CommentCreationTestModel = {
     content: "valid content of comment by lorem ipsum",
+}
+
+export type Cookie = {
+    value: string,
+    flags: {}
 }
 
 export function generateString(length = 20) : string {
@@ -96,6 +101,41 @@ export const createUser = async (model: UserCreateModel) : Promise<UserViewModel
             ...model,
         } as UserCreateModel);
     return result.body;
+}
+
+export const cookieFlags = (flags: any) : any => {
+    return flags.reduce((shapedFlags: any, flag: any) => {
+        const [flagName, rawValue] = flag.split("=");
+        const value = rawValue ? rawValue.replace(";", "") : true;
+        return { ...shapedFlags, [flagName]: value };
+    }, {});
+}
+
+export const extractCookie = (res: Response, name: string) : Cookie =>  {
+    const cookies = res.headers["set-cookie"];
+
+    return cookies.reduce((shapedCookies: any, cookieString: any) => {
+        const [rawCookie, ...flags] = cookieString.split("; ");
+        const [cookieName, value] = rawCookie.split("=");
+        if (cookieName === name) {
+            return { value, flags: cookieFlags(flags) };
+        }
+        return shapedCookies;
+    }, {}) as Cookie;
+};
+
+export const createCookie = (cookieObj: Object) : string =>  {
+    return Object.entries(cookieObj).map(([name, value]) => {
+        return name + "=" +value;
+    }).join(";");
+};
+
+export const wait = async (s: number) : Promise<void> => {
+    return new Promise<void>(res => {
+        setTimeout(() => {
+            res();
+        }, s * 1000)
+    })
 }
 
 export const createComment = async (postId: string, userId: string, model: CommentCreationTestModel = validCommentData) : Promise<CommentViewModel> => {

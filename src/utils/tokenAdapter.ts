@@ -62,7 +62,7 @@ export const verifyToken = (token: string) : AuthUserPass | null => {
         .digest(signatureDigest);
 
 
-    const isNotExpired = date && new Date(date.expiredIn).getTime() < new Date().getTime();
+    const isNotExpired = date && new Date(date.expiredIn).getTime() > new Date().getTime();
     const isSignatureEqual = signature === tokenParts[2];
 
     if ( isNotExpired && isSignatureEqual &&  user) {
