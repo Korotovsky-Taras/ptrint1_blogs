@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {Status} from "../types";
-import {verifyToken} from "../utils/tokenAdapter";
-import {AuthVerifiedTokenPass} from "../types/login";
+import {verifyAccessToken} from "../utils/tokenAdapter";
+import {AuthAccessTokenPayload} from "../types/login";
 
 export const authTokenAccessValidation = (req: Request, res: Response, next: NextFunction) => {
     const {authorization} = req.headers;
@@ -9,7 +9,7 @@ export const authTokenAccessValidation = (req: Request, res: Response, next: Nex
         const authorizationData = authorization.split(" ")
         if (authorizationData.length > 1 && authorizationData[0] === 'Bearer') {
             const bearerToken = authorizationData[1];
-            const tokenPass: AuthVerifiedTokenPass | null = verifyToken(bearerToken);
+            const tokenPass: AuthAccessTokenPayload | null = verifyAccessToken(bearerToken);
             if (tokenPass) {
                 req.userId = tokenPass.userId;
                 return next();

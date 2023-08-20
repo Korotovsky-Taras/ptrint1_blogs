@@ -39,6 +39,12 @@ export interface IAuthRouterController {
     me(req: Request, res: Response, next: NextFunction): Promise<Response>,
 }
 
+export interface ISecurityRouterController {
+    getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    deleteAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
+    deleteDevice(req: Request, res: Response, next: NextFunction): Promise<Response>,
+}
+
 export interface IUsersRouterController {
     getAll(req: Request, res: Response, next: NextFunction): Promise<Response>,
     createUser(req: Request, res: Response, next: NextFunction): Promise<Response>,

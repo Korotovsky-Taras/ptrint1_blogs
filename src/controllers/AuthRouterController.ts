@@ -2,7 +2,7 @@ import {IAuthRouterController, RequestWithBody, Status} from "../types";
 import {NextFunction, Request, Response} from "express";
 import {authService} from "../services/AuthService";
 import {
-    AuthLoginModel,
+    AuthLoginReqModel,
     AuthMeViewModel,
     AuthRefreshToken,
     AuthRegisterConfirmationModel,
@@ -10,14 +10,21 @@ import {
     AuthServiceResultModel,
     AuthTokens
 } from "../types/login";
-import {authTokenManager} from "../managers/aurhTokenManager";
+import {authHelper} from "../managers/authHelper";
 
 
 class AuthRouterController implements IAuthRouterController {
-    async login(req: RequestWithBody<AuthLoginModel>, res: Response, next: NextFunction) {
-        const auth: AuthTokens | null = await authService.login(req.body);
+    async login(req: RequestWithBody<AuthLoginReqModel>, res: Response, next: NextFunction) {
+
+        const auth: AuthTokens | null = await authService.login({
+            loginOrEmail: req.body.loginOrEmail,
+            password: req.body.password,
+            userAgent: authHelper.getUserAgent(req),
+            ip: authHelper.getIp(req)
+        });
+
         if (auth) {
-            authTokenManager.applyRefreshToken(res, auth.refreshToken);
+            authHelper.applyRefreshToken(res, auth.refreshToken);
             return res.status(Status.OK).send({
                 accessToken: auth.accessToken,
             })
@@ -27,9 +34,12 @@ class AuthRouterController implements IAuthRouterController {
 
     async logout(req: Request, res: Response, next: NextFunction) {
         if (req.userId) {
-            const refreshToken: AuthRefreshToken | null = await authService.logout(req.userId);
+            const refreshToken: AuthRefreshToken | null = await authService.logout({
+                userId: req.userId,
+                userAgent: authHelper.getUserAgent(req),
+            });
             if (refreshToken) {
-                authTokenManager.applyRefreshToken(res, refreshToken);
+                authHelper.applyRefreshToken(res, refreshToken);
                 return res.sendStatus(Status.NO_CONTENT)
             }
         }
@@ -38,9 +48,13 @@ class AuthRouterController implements IAuthRouterController {
 
     async refreshToken(req: Request, res: Response, next: NextFunction) {
         if (req.userId) {
-            const auth: AuthTokens | null = await authService.refreshTokens(req.userId);
+            const auth: AuthTokens | null = await authService.refreshTokens({
+                userId: req.userId,
+                userAgent: authHelper.getUserAgent(req),
+                ip: authHelper.getIp(req)
+            });
             if (auth) {
-                authTokenManager.applyRefreshToken(res, auth.refreshToken);
+                authHelper.applyRefreshToken(res, auth.refreshToken);
                 return res.status(Status.OK).send({
                     accessToken: auth.accessToken
                 })

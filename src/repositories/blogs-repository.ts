@@ -12,6 +12,7 @@ import {withMongoLogger} from "../utils/withMongoLogger";
 import {Filter, ObjectId} from "mongodb";
 import {BlogsDto} from "../dto/blogs.dto";
 import {withMongoQueryFilterPagination} from "./utils";
+import {toIsoString} from "../utils/date";
 
 
 export const blogsRepository = {
@@ -30,7 +31,7 @@ export const blogsRepository = {
         return withMongoLogger<BlogViewModel>(async () => {
             const newBlog: Blog = {
                 ...input,
-                createdAt: (new Date()).toISOString(),
+                createdAt: toIsoString(new Date()),
                 isMembership: false,
             }
             const res = await blogsCollection.insertOne(newBlog);

@@ -1,13 +1,27 @@
 import {User} from "./users";
 import {WithId} from "mongodb";
 
-export type AuthLoginModel = {
+export type AuthLoginReqModel = {
     loginOrEmail: string,
     password: string,
 }
 
-export type AuthLogoutModel = {
-    userId: string
+export type AuthLoginRepoModel = Pick<AuthLoginReqModel, 'loginOrEmail' | 'password' > & { userAgent: string, ip: string }
+
+export type AuthRefreshTokenRepoModel = {
+    userId: string,
+    userAgent: string,
+    ip: string,
+}
+
+export type AuthLogoutRepoModel = {
+    userId: string,
+    userAgent: string,
+}
+
+export type AuthDeleteAllSessionsRepoModel = {
+    userId: string,
+    userAgent: string,
 }
 
 export type AuthRegisterModel = Pick<User, 'login' | 'email' > & { password: string }
@@ -24,14 +38,33 @@ export type AuthServiceResultModel = {
     success: boolean
 }
 
-export type AuthTokenPass = {
+export type AuthAccessTokenPass = {
     token: string,
-    uuid: string
 }
 
-export type AuthVerifiedTokenPass = {
+export type AuthRefreshTokenPass = {
+    token: string,
+    uuid: string,
+    deviceId: string,
+    expiredIn: string,
+}
+
+export type AuthAccessTokenPayload = {
     userId: string,
-    uuid: string
+    expiredIn: string
+}
+
+export type AuthTokenParts = {
+    head: string,
+    body: string
+    signature: string
+}
+
+export type AuthRefreshTokenPayload = {
+    userId: string,
+    uuid: string,
+    deviceId: string,
+    expiredIn: string
 }
 
 export type AuthAccessToken = Readonly<string>;
@@ -57,6 +90,18 @@ export type AuthConfirmation = {
 export type AuthSession = {
     userId: string,
     uuid: string,
+    ip: string,
+    userAgent: string,
+    lastActiveDate: string,
+    deviceId: string,
 }
+
+export type AuthSessionMongoModel = WithId<AuthSession>;
+
+export type AuthSessionValidationModel = Pick<AuthSession, "uuid">;
+
+export type AuthSessionViewModel = Pick<AuthSession, "ip" | "lastActiveDate" | "deviceId"> & {title: string};
+
+export type AuthSessionDataModel = Pick<AuthSession, "uuid" | "userId" | "deviceId">;
 
 export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;

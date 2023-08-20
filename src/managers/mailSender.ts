@@ -1,6 +1,6 @@
 import {mailAdapter} from "../utils/mailAdapter";
 
-class AuthMailManager {
+class MailSender {
     async sendRegistrationMail(to: string, code: string) : Promise<boolean> {
         return mailAdapter.sendGmail({
             to,
@@ -11,4 +11,4 @@ class AuthMailManager {
     }
 }
 
-export const authMailManager = new AuthMailManager();
+export const mailSender = new MailSender();

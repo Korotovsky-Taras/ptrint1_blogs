@@ -12,6 +12,7 @@ import {
 import {CommentsDto} from "../dto/comments.dto";
 import {withMongoQueryFilterPagination} from "./utils";
 import {ObjectId} from "mongodb";
+import {toIsoString} from "../utils/date";
 
 export const commentsRepository = {
     async createComment(input: CommentCreateModel): Promise<CommentViewModel> {
@@ -23,7 +24,7 @@ export const commentsRepository = {
                     userId: input.userId,
                     userLogin: input.userLogin,
                 },
-                createdAt: (new Date()).toISOString(),
+                createdAt: toIsoString(new Date()),
             }
             const res = await commentsCollection.insertOne(newComment);
             return CommentsDto.comment({

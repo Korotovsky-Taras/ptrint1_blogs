@@ -1,18 +1,17 @@
 import {NextFunction, Request, Response} from "express";
 import {Status} from "../types";
-import {authTokenManager} from "../managers/aurhTokenManager";
-import {AuthSession, AuthVerifiedTokenPass} from "../types/login";
-import {verifyToken} from "../utils/tokenAdapter";
-import {authSessionsCollection} from "../db";
+import {authHelper} from "../managers/authHelper";
+import {AuthRefreshTokenPayload, AuthSessionValidationModel} from "../types/login";
+import {verifyRefreshToken} from "../utils/tokenAdapter";
+import {usersRepository} from "../repositories/users-repository";
 
 export const authTokenRefreshValidation = async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken : string | null = authTokenManager.getRefreshToken(req);
+    const refreshToken : string | null = authHelper.getRefreshToken(req);
     if (refreshToken) {
-        const tokenPass: AuthVerifiedTokenPass | null = verifyToken(refreshToken);
+        const tokenPass: AuthRefreshTokenPayload | null = verifyRefreshToken(refreshToken);
 
         if (tokenPass) {
-            const userId = tokenPass.userId;
-            const session: AuthSession | null = await authSessionsCollection.findOne({userId})
+            const session: AuthSessionValidationModel | null = await usersRepository.getAuthSession(tokenPass.userId, tokenPass.deviceId);
 
             if (session && session.uuid === tokenPass.uuid) {
                 req.userId = tokenPass.userId;

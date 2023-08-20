@@ -13,6 +13,7 @@ import {postsCollection} from "../db";
 import {ObjectId} from "mongodb";
 import {PostsDto} from "../dto/posts.dto";
 import {withMongoQueryFilterPagination} from "./utils/";
+import {toIsoString} from "../utils/date";
 
 export const postsRepository = {
     async getPosts(filter: Partial<PostMongoModel>, query: PostPaginationRepositoryModel): Promise<PostsListViewModel> {
@@ -28,7 +29,7 @@ export const postsRepository = {
                 content: input.content,
                 blogId: blog.id,
                 blogName: blog.name,
-                createdAt: (new Date()).toISOString(),
+                createdAt: toIsoString(new Date()),
             }
             const res = await postsCollection.insertOne(newPost);
             return PostsDto.post({

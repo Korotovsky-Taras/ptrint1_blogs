@@ -2,9 +2,11 @@ import {BlogCreateModel, BlogPostCreateModel, BlogUpdateModel, BlogViewModel} fr
 import {PostsCommentCreateModel, PostsCreateModel, PostsUpdateModel, PostViewModel} from "./posts";
 import {UserCreateModel, UserViewModel} from "./users";
 import {
-    AuthLoginModel,
+    AuthLoginRepoModel,
+    AuthLogoutRepoModel,
     AuthMeViewModel,
     AuthRefreshToken,
+    AuthRefreshTokenRepoModel,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthResendingEmailModel,
@@ -35,9 +37,9 @@ export interface IUsersService {
 }
 
 export interface IAuthService {
-    login(model: AuthLoginModel): Promise<AuthTokens | null>
-    logout(userId: string): Promise<AuthRefreshToken | null>
-    refreshTokens(userId: string): Promise<AuthTokens | null>
+    login(model: AuthLoginRepoModel): Promise<AuthTokens | null>
+    logout(model: AuthLogoutRepoModel): Promise<AuthRefreshToken | null>
+    refreshTokens(model: AuthRefreshTokenRepoModel): Promise<AuthTokens | null>
     registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel>
     verifyConfirmationCode(model: AuthRegisterConfirmationModel): Promise<AuthServiceResultModel>
     tryResendConfirmationCode(model: AuthResendingEmailModel): Promise<AuthServiceResultModel>,

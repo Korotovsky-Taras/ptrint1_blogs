@@ -1,37 +1,51 @@
 import crypto from "node:crypto";
 import {appConfig} from "./config";
-import {AuthTokenPass, AuthVerifiedTokenPass} from "../types/login";
+import {
+    AuthAccessTokenPass,
+    AuthAccessTokenPayload,
+    AuthRefreshTokenPass,
+    AuthRefreshTokenPayload,
+    AuthTokenParts
+} from "../types/login";
 import {withObjectValue} from "./withUserId";
 import {BinaryToTextEncoding, randomUUID} from "crypto";
+import {toIsoString} from "./date";
 
 const {tokenSecret} = appConfig;
 
 const signatureDigest: BinaryToTextEncoding = 'base64url';
 
-export const createAccessToken = (userId: string) : AuthTokenPass => {
-    let expiredDate: Date = new Date();
-    expiredDate.setTime(expiredDate.getTime() + 10 * 1000);
-    return createToken(userId, expiredDate.toISOString())
+export const createAccessToken = (userId: string) : AuthAccessTokenPass => {
+    const expiredIn: Date = new Date();
+    expiredIn.setTime(expiredIn.getTime() + 3 * 1000 * 60);
+    return _createAccessToken(userId, toIsoString(expiredIn));
 }
 
-export const createRefreshToken = (userId: string) : AuthTokenPass => {
-    let expiredDate: Date = new Date();
-    expiredDate.setTime(expiredDate.getTime() + 20 * 1000);
-    return createToken(userId, expiredDate.toISOString())
+export const createRefreshToken = (userId: string, userAgent: string) : AuthRefreshTokenPass => {
+    const expiredIn: Date = new Date();
+    expiredIn.setTime(expiredIn.getTime() + 30 * 1000 * 60);
+    const deviceId = _createDeviceId(userId, userAgent);
+    return _createRefreshToken(userId, deviceId, toIsoString(expiredIn));
 }
 
-export const createExpiredRefreshToken = (userId: string) : AuthTokenPass => {
-    return createToken(userId, new Date().toISOString())
+export const createExpiredRefreshToken = (userId: string, userAgent: string) : AuthRefreshTokenPass => {
+    const expiredIn: Date = new Date();
+    const deviceId = _createDeviceId(userId, userAgent);
+    return _createRefreshToken(userId, deviceId, toIsoString(expiredIn));
 }
 
-const createToken = (userId: string, expiredIn: string) : AuthTokenPass => {
-    const uuid = randomUUID();
+const _createDeviceId = (userId: string, userAgent: string) : string => {
+    const hash = crypto.createHash('sha256');
+    hash.update(userId + userAgent);
+    return hash.digest('hex');
+}
 
+const _createAccessToken = (userId: string, expiredIn: string) : AuthAccessTokenPass => {
     const head = Buffer.from(
         JSON.stringify({ alg: 'HS256', typ: 'jwt' })
     ).toString('base64');
     const body = Buffer.from(
-        JSON.stringify({ userId, expiredIn, uuid })
+        JSON.stringify({ userId, expiredIn })
     ).toString('base64');
     let signature = crypto
         .createHmac('SHA256', tokenSecret)
@@ -40,11 +54,76 @@ const createToken = (userId: string, expiredIn: string) : AuthTokenPass => {
 
     return {
         token: `${head}.${body}.${signature}`,
-        uuid
     }
 }
 
-export const verifyToken = (token: string) : AuthVerifiedTokenPass | null => {
+const _createRefreshToken = (userId: string, deviceId: string, expiredIn: string) : AuthRefreshTokenPass => {
+    const uuid = randomUUID();
+
+    const head = Buffer.from(
+        JSON.stringify({ alg: 'HS256', typ: 'jwt' })
+    ).toString('base64');
+    const body = Buffer.from(
+        JSON.stringify({ userId, expiredIn, deviceId, uuid })
+    ).toString('base64');
+    let signature = crypto
+        .createHmac('SHA256', tokenSecret)
+        .update(`${head}.${body}`)
+        .digest(signatureDigest);
+
+    return {
+        token: `${head}.${body}.${signature}`,
+        uuid,
+        deviceId,
+        expiredIn
+    }
+}
+
+export const verifyRefreshToken = (token: string) : AuthRefreshTokenPayload | null => {
+    const tokenParts : AuthTokenParts | null = _getTokenParts(token);
+
+    if (!tokenParts) {
+        return null
+    }
+
+    if (!_isValidTokenSignature(tokenParts)) {
+        return null;
+    }
+
+    const payload : AuthRefreshTokenPayload | null = _getRefreshTokenPayload(tokenParts.body);
+
+    if (!payload || _isExpiredToken(payload.expiredIn)) {
+        return null;
+    }
+
+    return payload;
+
+}
+
+export const verifyAccessToken = (token: string) : AuthAccessTokenPayload | null => {
+
+    const tokenParts : AuthTokenParts | null = _getTokenParts(token);
+
+    if (!tokenParts) {
+        return null
+    }
+
+    if (!_isValidTokenSignature(tokenParts)) {
+        return null;
+    }
+
+    const payload : AuthAccessTokenPayload | null = _getAccessTokenPayload(tokenParts.body);
+
+    if (!payload || _isExpiredToken(payload.expiredIn)) {
+        return null;
+    }
+
+    return payload;
+}
+
+
+
+const _getTokenParts = (token: string) : AuthTokenParts | null  => {
     if (!token) {
         return null;
     }
@@ -54,28 +133,50 @@ export const verifyToken = (token: string) : AuthVerifiedTokenPass | null => {
     if (tokenParts.length < 3) {
         return null;
     }
-
-    const buffer = Buffer.from(tokenParts[1], 'base64');
-    const payload = JSON.parse(buffer.toString());
-    const userId = withObjectValue(payload, "userId");
-    const expiredIn = withObjectValue(payload, "expiredIn");
-    const uuid = withObjectValue(payload, "uuid");
-
-    let signature = crypto
-        .createHmac('SHA256', tokenSecret)
-        .update(`${tokenParts[0]}.${tokenParts[1]}`)
-        .digest(signatureDigest);
-
-    const isNotExpired = expiredIn && new Date(expiredIn).getTime() > new Date().getTime();
-    const isSignatureEqual = signature === tokenParts[2];
-
-    if (userId && uuid && isNotExpired && isSignatureEqual) {
-        return {
-            userId,
-            uuid
-        }
-    }
-
-    return null;
+    return {
+        head: tokenParts[0],
+        body: tokenParts[1],
+        signature: tokenParts[2]
+    };
 }
 
+const _isValidTokenSignature = (tokenParts: AuthTokenParts) : boolean  => {
+    let signature = crypto
+        .createHmac('SHA256', tokenSecret)
+        .update(`${tokenParts.head}.${tokenParts.body}`)
+        .digest(signatureDigest);
+
+    return signature === tokenParts.signature
+}
+
+const _isExpiredToken = (expiredIn: string) : boolean  => {
+    return new Date(expiredIn).getTime() < new Date().getTime();
+}
+
+const _getAccessTokenPayload = (payload: string) : AuthAccessTokenPayload | null => {
+    const buffer = Buffer.from(payload, 'base64');
+    const json = JSON.parse(buffer.toString());
+
+    const userId = withObjectValue(json, "userId");
+    const expiredIn = withObjectValue(json, "expiredIn");
+
+    if (userId && expiredIn) {
+        return { userId, expiredIn }
+    }
+    return null
+}
+
+const _getRefreshTokenPayload = (payload: string) : AuthRefreshTokenPayload | null => {
+    const buffer = Buffer.from(payload, 'base64');
+    const json = JSON.parse(buffer.toString());
+
+    const uuid = withObjectValue(json, "uuid");
+    const userId = withObjectValue(json, "userId");
+    const expiredIn = withObjectValue(json, "expiredIn");
+    const deviceId = withObjectValue(json, "deviceId");
+
+    if (userId && deviceId && uuid && expiredIn) {
+        return { userId, deviceId, uuid, expiredIn }
+    }
+    return null
+}

@@ -8,6 +8,7 @@ import {
     authRegistrationValidation
 } from "../middlewares/auth-registration-validation";
 import {authTokenRefreshValidation} from "../middlewares/auth-token-refresh-validation";
+import {authRateLimiter} from "../middlewares/auth-rate-limiter";
 
 
 export const authLoginRoute: Route<IAuthRouterController> = {
@@ -16,7 +17,8 @@ export const authLoginRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'login',
     middlewares: [
-        loginCreationValidator
+        loginCreationValidator,
+        authRateLimiter(5,10)
     ]
 }
 
@@ -36,7 +38,7 @@ export const authRefreshRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'refreshToken',
     middlewares: [
-        authTokenRefreshValidation,
+        authTokenRefreshValidation
     ]
 }
 
@@ -56,7 +58,8 @@ export const authRegistrationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registration',
     middlewares: [
-        authRegistrationValidation
+        authRegistrationValidation,
+        authRateLimiter(5,10)
     ]
 }
 
@@ -67,6 +70,7 @@ export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
     action: 'registrationConfirmation',
     middlewares: [
         authCodeValidation,
+        authRateLimiter()
     ]
 }
 
@@ -76,7 +80,8 @@ export const authRegistrationEmailResendingRoute: Route<IAuthRouterController> =
     controller: authRouterController,
     action: 'registrationEmailResending',
     middlewares: [
-        authEmailResendingValidation
+        authEmailResendingValidation,
+        authRateLimiter(5,10)
     ]
 }
 

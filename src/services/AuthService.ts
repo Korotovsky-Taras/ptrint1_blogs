@@ -1,8 +1,10 @@
 import {IAuthService, UserReplaceConfirmationData, UserWithConfirmedViewModel} from "../types";
 import {
-    AuthLoginModel,
+    AuthLoginRepoModel,
+    AuthLogoutRepoModel,
     AuthMeViewModel,
     AuthRefreshToken,
+    AuthRefreshTokenRepoModel,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthResendingEmailModel,
@@ -10,29 +12,29 @@ import {
     AuthTokens
 } from "../types/login";
 import {usersRepository} from "../repositories/users-repository";
-import {authMailManager} from "../managers/authMailManager";
+import {mailSender} from "../managers/mailSender";
 import {userService} from "./UsersService";
 
 
 class AuthService implements IAuthService {
 
-    async login(model: AuthLoginModel): Promise<AuthTokens | null> {
+    async login(model: AuthLoginRepoModel): Promise<AuthTokens | null> {
         return usersRepository.loginUser(model);
     }
 
-    async logout(userId: string): Promise<AuthRefreshToken | null> {
-        return usersRepository.logoutUser(userId);
+    async logout(model: AuthLogoutRepoModel): Promise<AuthRefreshToken | null> {
+        return usersRepository.logoutUser(model);
     }
 
-    async refreshTokens(userId: string): Promise<AuthTokens | null> {
-        return usersRepository.refreshTokens(userId);
+    async refreshTokens(model: AuthRefreshTokenRepoModel): Promise<AuthTokens | null> {
+        return usersRepository.refreshTokens(model);
     }
 
     async registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel> {
         const user: UserWithConfirmedViewModel | null = await userService.createUserWithVerification(model);
 
         if (user && !user.confirmed) {
-            await authMailManager.sendRegistrationMail(user.email, user.confirmationCode);
+            await mailSender.sendRegistrationMail(user.email, user.confirmationCode);
             return {
                 success: true
             }
@@ -50,7 +52,7 @@ class AuthService implements IAuthService {
     async tryResendConfirmationCode(model: AuthResendingEmailModel): Promise<AuthServiceResultModel> {
         const data: UserReplaceConfirmationData | null = await usersRepository.createUserReplaceConfirmationCode(model.email);
         if (data) {
-            await authMailManager.sendRegistrationMail(data.email, data.code);
+            await mailSender.sendRegistrationMail(data.email, data.code);
             return {
                 success: true
             }
