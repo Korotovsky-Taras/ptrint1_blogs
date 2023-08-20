@@ -141,7 +141,7 @@ export const wait = async (s: number) : Promise<void> => {
 export const createComment = async (postId: string, userId: string, model: CommentCreationTestModel = validCommentData) : Promise<CommentViewModel> => {
     const result = await requestApp
         .post(`/posts/${postId}/comments`)
-        .set('Authorization', 'Bearer ' + createAccessToken(userId))
+        .set('Authorization', 'Bearer ' + createAccessToken(userId).token)
         .set('Content-Type', 'application/json')
         .send({
             ...model
