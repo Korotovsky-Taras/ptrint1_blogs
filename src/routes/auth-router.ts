@@ -70,7 +70,7 @@ export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
     action: 'registrationConfirmation',
     middlewares: [
         authCodeValidation,
-        authRateLimiter()
+        authRateLimiter(5,10)
     ]
 }
 
