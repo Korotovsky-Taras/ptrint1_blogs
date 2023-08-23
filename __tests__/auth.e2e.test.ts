@@ -1,4 +1,3 @@
-// TODO tests
 import {createCookie, createNewUserModel, createUser, extractCookie, requestApp, UserCreationTestModel,} from "./utils";
 import {Status, UserViewModel} from "../src/types";
 import {Response} from "supertest";
@@ -32,8 +31,8 @@ describe("auth testing", () => {
 
         const cookie = extractCookie(res, "refreshToken");
 
-        expect(cookie).not.toBeNull();
-        refreshToken = cookie.value;
+        expect(cookie).not.toBeUndefined();
+        refreshToken = cookie!.value;
     })
 
     it("should refresh tokens", async () => {
@@ -54,9 +53,9 @@ describe("auth testing", () => {
 
         const cookie = extractCookie(res, "refreshToken");
 
-        expect(cookie.value).not.toBeNull();
-        expect(cookie.value).not.toEqual(refreshToken);
-        refreshToken = cookie.value;
+        expect(cookie).not.toBeUndefined();
+        expect(cookie!.value).not.toEqual(refreshToken);
+        refreshToken = cookie!.value;
 
     })
 
@@ -78,8 +77,8 @@ describe("auth testing", () => {
 
         const cookie = extractCookie(res, "refreshToken");
 
-        expect(cookie.value).not.toBeNull();
-        expect(cookie.value).not.toEqual(refreshToken);
+        expect(cookie).not.toBeUndefined();
+        expect(cookie!.value).not.toEqual(refreshToken);
 
     })
 
