@@ -2,7 +2,6 @@ import {ISecurityRouterController, ParamIdModel, RequestWithParams, Status} from
 import {NextFunction, Request, Response} from "express";
 import {usersRepository} from "../repositories/users-repository";
 import {AuthSessionViewModel} from "../types/login";
-import {authHelper} from "../managers/authHelper";
 
 
 class SecurityRouterController implements ISecurityRouterController {
@@ -14,10 +13,10 @@ class SecurityRouterController implements ISecurityRouterController {
         return res.sendStatus(Status.UNATHORIZED);
     }
     async deleteAll(req: Request, res: Response, next: NextFunction) {
-        if (req.userId) {
+        if (req.userId && req.deviceId) {
             const isDeleted: boolean = await usersRepository.deleteAllSessions({
                 userId: req.userId,
-                userAgent: authHelper.getUserAgent(req)
+                deviceId: req.deviceId
             });
             if (isDeleted) {
                 return res.sendStatus(Status.NO_CONTENT);
@@ -27,8 +26,9 @@ class SecurityRouterController implements ISecurityRouterController {
         return res.sendStatus(Status.UNATHORIZED);
     }
     async deleteDevice(req: RequestWithParams<ParamIdModel>, res: Response, next: NextFunction) {
-        if (req.userId) {
+        if (req.userId && req.deviceId) {
             const session = await usersRepository.findSessionByDeviceId(req.params.id);
+
             if (!session) {
                 return res.sendStatus(Status.NOT_FOUND);
             }

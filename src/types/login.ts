@@ -10,18 +10,19 @@ export type AuthLoginRepoModel = Pick<AuthLoginReqModel, 'loginOrEmail' | 'passw
 
 export type AuthRefreshTokenRepoModel = {
     userId: string,
+    deviceId: string,
     userAgent: string,
     ip: string,
 }
 
 export type AuthLogoutRepoModel = {
     userId: string,
-    userAgent: string,
+    deviceId: string,
 }
 
 export type AuthDeleteAllSessionsRepoModel = {
     userId: string,
-    userAgent: string,
+    deviceId: string,
 }
 
 export type AuthRegisterModel = Pick<User, 'login' | 'email' > & { password: string }
@@ -93,15 +94,14 @@ export type AuthSession = {
     ip: string,
     userAgent: string,
     lastActiveDate: string,
-    deviceId: string,
 }
 
 export type AuthSessionMongoModel = WithId<AuthSession>;
 
-export type AuthSessionValidationModel = Pick<AuthSession, "uuid">;
+export type AuthSessionValidationModel = Pick<AuthSession, "uuid" > & {deviceId: string};
 
-export type AuthSessionViewModel = Pick<AuthSession, "ip" | "lastActiveDate" | "deviceId"> & {title: string};
+export type AuthSessionViewModel = Pick<AuthSession, "ip" | "lastActiveDate"> & {title: string, deviceId: string};
 
-export type AuthSessionDataModel = Pick<AuthSession, "uuid" | "userId" | "deviceId">;
+export type AuthSessionDataModel = Pick<AuthSession, "uuid" | "userId"> & {deviceId: string};
 
 export type AuthConfirmationMongoModel = WithId<AuthConfirmation>;

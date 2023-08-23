@@ -17,8 +17,8 @@ export const authLoginRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'login',
     middlewares: [
+        authRateLimiter(5,10),
         loginCreationValidator,
-        authRateLimiter(5,10)
     ]
 }
 
@@ -58,8 +58,8 @@ export const authRegistrationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registration',
     middlewares: [
+        authRateLimiter(5,10),
         authRegistrationValidation,
-        authRateLimiter(5,10)
     ]
 }
 
@@ -69,8 +69,8 @@ export const authRegistrationConfirmationRoute: Route<IAuthRouterController> = {
     controller: authRouterController,
     action: 'registrationConfirmation',
     middlewares: [
+        authRateLimiter(5,10),
         authCodeValidation,
-        authRateLimiter(5,10)
     ]
 }
 
@@ -80,8 +80,8 @@ export const authRegistrationEmailResendingRoute: Route<IAuthRouterController> =
     controller: authRouterController,
     action: 'registrationEmailResending',
     middlewares: [
+        authRateLimiter(5,10),
         authEmailResendingValidation,
-        authRateLimiter(5,10)
     ]
 }
 

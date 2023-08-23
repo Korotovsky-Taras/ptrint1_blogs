@@ -5,7 +5,6 @@ import {
     AuthLoginRepoModel,
     AuthLogoutRepoModel,
     AuthMeViewModel,
-    AuthRefreshToken,
     AuthRefreshTokenRepoModel,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
@@ -38,7 +37,7 @@ export interface IUsersService {
 
 export interface IAuthService {
     login(model: AuthLoginRepoModel): Promise<AuthTokens | null>
-    logout(model: AuthLogoutRepoModel): Promise<AuthRefreshToken | null>
+    logout(model: AuthLogoutRepoModel): Promise<boolean>
     refreshTokens(model: AuthRefreshTokenRepoModel): Promise<AuthTokens | null>
     registerUser(model: AuthRegisterModel): Promise<AuthServiceResultModel>
     verifyConfirmationCode(model: AuthRegisterConfirmationModel): Promise<AuthServiceResultModel>

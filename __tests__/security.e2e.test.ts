@@ -1,19 +1,50 @@
-import {createCookie, createNewUserModel, createUser, extractCookie, requestApp, UserCreationTestModel,} from "./utils";
+import {
+    Cookie,
+    createCookie,
+    createNewUserModel,
+    createUser,
+    extractCookie,
+    refreshCookie,
+    requestApp,
+    SessionUnit,
+    UserCreationTestModel,
+} from "./utils";
 import {Status, UserViewModel} from "../src/types";
+import {createRefreshToken, verifyRefreshToken} from "../src/utils/tokenAdapter";
+import {AuthRefreshTokenPayload} from "../src/types/login";
+import {randomUUID, UUID} from "crypto";
 
-let userModel: UserCreationTestModel = createNewUserModel();
-let user: UserViewModel | null = null;
+let userModel1: UserCreationTestModel = createNewUserModel();
+let userModel2: UserCreationTestModel = createNewUserModel();
+let user1: UserViewModel | null = null;
+let user2: UserViewModel | null = null;
 
-let userAgents = ["app1", "app2", "app3", "app4"];
-let refreshTokens = new Map();
-let deviceIDs = new Map();
+
+let userAgents = ["app1", "app1", "app1", "app1"];
+let user1Sessions: SessionUnit[] = [];
+let user2Sessions: SessionUnit[] = [];
+
+function removeUser1Session(sessionUuid: UUID) {
+    user1Sessions = user1Sessions.filter(session => session.uuid != sessionUuid);
+}
+
+function getUser1Session(index: number) : SessionUnit {
+    const session = user1Sessions[index];
+    if (session === undefined) {
+        throw Error("Session index error")
+    }
+    return session;
+}
+
 
 describe("security testing", () => {
 
     beforeAll(async () => {
         await requestApp.delete("/testing/all-data");
-        user = await createUser(userModel);
-        refreshTokens.clear();
+        user1 = await createUser(userModel1);
+        user2 = await createUser(userModel2);
+        user1Sessions.length = 0;
+        user2Sessions.length = 0;
     })
 
     it("should login user on 4 devices", async () => {
@@ -24,33 +55,39 @@ describe("security testing", () => {
                 .set('Content-Type', 'application/json')
                 .set('User-Agent', userAgent)
                 .send({
-                    loginOrEmail: userModel.login,
-                    password: userModel.password
+                    loginOrEmail: userModel1.login,
+                    password: userModel1.password
                 }).expect(Status.OK)
 
             expect(res.body).toEqual({
                 accessToken: expect.any(String)
             })
-            const cookie = extractCookie(res, "refreshToken");
 
-            expect(cookie).not.toBeNull();
-            refreshTokens.set(userAgent, cookie);
+            const cookie : Cookie | undefined = extractCookie(res, "refreshToken");
+            if (cookie) {
+                const payload : AuthRefreshTokenPayload | null = verifyRefreshToken(cookie.value);
+                if (payload) {
+                    user1Sessions.push({
+                        uuid: randomUUID(),
+                        payload,
+                        refreshToken: cookie.value
+                    });
+                }
+            }
         }
+
+        expect(user1Sessions).toHaveLength(userAgents.length)
 
     })
 
+
     it("should return list of 4 devices", async () => {
-
-        const agent = userAgents[0];
-        const refreshToken = refreshTokens.get(agent);
-
-        expect(refreshToken).not.toBeNull()
+        const session = getUser1Session(0);
 
         const res = await requestApp
             .get(`/security/devices`)
-            .set('User-Agent', agent)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken.value,
+                refreshToken: session.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
@@ -59,24 +96,16 @@ describe("security testing", () => {
 
         expect(res.body).toHaveLength(4);
 
-        deviceIDs.clear();
-        res.body.map((device: any) => {
-            deviceIDs.set(device.title, device.deviceId);
-        })
     })
 
+
     it("should update refreshToken 1 device", async () => {
-
-        const agent = userAgents[0];
-        const oldToken = refreshTokens.get(agent);
-
-        expect(oldToken).not.toBeNull()
+        const session : SessionUnit = getUser1Session(0)
 
         const res = await requestApp
             .post(`/auth/refresh-token`)
-            .set('User-Agent', agent)
             .set("Cookie", [createCookie({
-                refreshToken: oldToken.value,
+                refreshToken: session.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
@@ -85,23 +114,20 @@ describe("security testing", () => {
 
         const cookie = extractCookie(res, "refreshToken");
 
-        expect(cookie.value).not.toBeNull();
-        expect(cookie.value).not.toEqual(oldToken.value);
+        expect(cookie).not.toBeUndefined();
+        expect(cookie!.value).not.toEqual(session.refreshToken);
+
+        refreshCookie(cookie, session);
 
     })
 
     it("should return list of 4 devices too", async () => {
-
-        const agent = userAgents[2];
-        const refreshToken = refreshTokens.get(agent);
-
-        expect(refreshToken).not.toBeNull()
+        const session : SessionUnit = getUser1Session(0)
 
         const res = await requestApp
             .get(`/security/devices`)
-            .set('User-Agent', agent)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken.value,
+                refreshToken: session.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
@@ -110,43 +136,29 @@ describe("security testing", () => {
 
         expect(res.body).toHaveLength(4);
 
-        deviceIDs.clear();
-        res.body.map((device: any) => {
-            deviceIDs.set(device.title, device.deviceId);
-        })
-
     })
 
     it("should delete 2cond device", async () => {
 
-        const agent2 = userAgents[2];
-        const deviceId2 = deviceIDs.get(agent2);
-        const refreshToken2 = refreshTokens.get(agent2);
-
-        expect(deviceId2).not.toBeNull()
-        expect(refreshToken2).not.toBeNull()
+        const session0 = getUser1Session(0);
+        const session1 = getUser1Session(1);
 
         await requestApp
-            .delete(`/security/devices/${deviceId2}`)
-            .set('User-Agent', agent2)
+            .delete(`/security/devices/${session1.payload.deviceId}`)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken2.value,
+                refreshToken: session0.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
             })])
             .expect(Status.NO_CONTENT);
 
-        const agent1 = userAgents[1];
-        const refreshToken1 = refreshTokens.get(agent1);
-        expect(agent1).not.toBeNull()
-        expect(refreshToken1).not.toBeNull()
+        removeUser1Session(session1.uuid);
 
         const res = await requestApp
             .get(`/security/devices`)
-            .set('User-Agent', agent1)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken1.value,
+                refreshToken: session0.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
@@ -155,46 +167,33 @@ describe("security testing", () => {
 
         expect(res.body).toHaveLength(3);
 
-        deviceIDs.clear();
-        res.body.map((device: any) => {
-            deviceIDs.set(device.title, device.deviceId);
-        })
-
-        expect(deviceIDs.get(agent2)).toBeUndefined()
-
     })
 
 
-    it("should logout device 3", async () => {
+    it("should logout device session", async () => {
 
-        const agent3 = userAgents[3];
-        const deviceId3 = deviceIDs.get(agent3);
-        const refreshToken3 = refreshTokens.get(agent3);
+        const session1 = getUser1Session(0);
 
-        expect(deviceId3).not.toBeNull()
-        expect(refreshToken3).not.toBeNull()
+        expect(session1).not.toBeUndefined()
 
         await requestApp
             .post(`/auth/logout`)
-            .set('User-Agent', agent3)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken3.value,
+                refreshToken: session1.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
             })])
-            .expect(Status.NO_CONTENT)
+            .expect(Status.NO_CONTENT);
 
-        const agent1 = userAgents[1];
-        const refreshToken1 = refreshTokens.get(agent1);
-        expect(agent1).not.toBeNull()
-        expect(refreshToken1).not.toBeNull()
+        removeUser1Session(session1.uuid);
+
+        const session2 = getUser1Session(0);
 
         const res = await requestApp
             .get(`/security/devices`)
-            .set('User-Agent', agent1)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken1.value,
+                refreshToken: session2.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
@@ -203,61 +202,76 @@ describe("security testing", () => {
 
         expect(res.body).toHaveLength(2);
 
-        deviceIDs.clear();
-        res.body.map((device: any) => {
-            deviceIDs.set(device.title, device.deviceId);
-        })
-
-        expect(deviceIDs.get(agent3)).toBeUndefined()
     })
 
 
     it("should remove all devices expect device 1", async () => {
 
-        const agent1 = userAgents[1];
-        const deviceId1 = deviceIDs.get(agent1);
-        const refreshToken1 = refreshTokens.get(agent1);
-
-        expect(deviceId1).not.toBeNull()
-        expect(refreshToken1).not.toBeNull()
+        const session = getUser1Session(0);
 
         await requestApp
             .delete(`/security/devices`)
-            .set('User-Agent', agent1)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken1.value,
+                refreshToken: session.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
             })])
-            .expect(Status.NO_CONTENT)
+            .expect(Status.NO_CONTENT);
+
+        user1Sessions.forEach(({uuid}) => {
+            if (uuid != session.uuid) {
+                removeUser1Session(uuid)
+            }
+        })
 
         const res = await requestApp
             .get(`/security/devices`)
-            .set('User-Agent', agent1)
             .set("Cookie", [createCookie({
-                refreshToken: refreshToken1.value,
+                refreshToken: session.refreshToken,
                 Path: "/",
                 HttpOnly: true,
                 Secure: true
             })])
             .expect(Status.OK)
 
-
         expect(res.body).toHaveLength(1);
 
-        deviceIDs.clear();
-        res.body.map((device: any) => {
-            deviceIDs.set(device.title, device.deviceId);
-        })
+    })
 
-        const agent2 = userAgents[2];
-        const agent3 = userAgents[3];
-        const agent4 = userAgents[4];
+    it("should return 403 when user1 try logout user2", async () => {
 
-        expect(deviceIDs.get(agent2)).toBeUndefined()
-        expect(deviceIDs.get(agent3)).toBeUndefined()
-        expect(deviceIDs.get(agent4)).toBeUndefined()
+        const user1Session = getUser1Session(0);
+
+        const res = await requestApp
+            .post(`/auth/login`)
+            .set('Content-Type', 'application/json')
+            .send({
+                loginOrEmail: userModel2.login,
+                password: userModel2.password
+            }).expect(Status.OK)
+
+        const cookie : Cookie | undefined = extractCookie(res, "refreshToken");
+
+        if (!cookie) {
+            throw Error();
+        }
+
+        const payload: AuthRefreshTokenPayload | null = verifyRefreshToken(cookie.value);
+        if (!payload) {
+            throw Error()
+        }
+
+        await requestApp
+            .post(`/auth/logout`)
+            .set("Cookie", [createCookie({
+                refreshToken: createRefreshToken(payload.userId, user1Session.payload.deviceId),
+                Path: "/",
+                HttpOnly: true,
+                Secure: true
+            })])
+            .expect(Status.UNATHORIZED);
+
     })
 
 

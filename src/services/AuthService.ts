@@ -3,7 +3,6 @@ import {
     AuthLoginRepoModel,
     AuthLogoutRepoModel,
     AuthMeViewModel,
-    AuthRefreshToken,
     AuthRefreshTokenRepoModel,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
@@ -22,7 +21,7 @@ class AuthService implements IAuthService {
         return usersRepository.loginUser(model);
     }
 
-    async logout(model: AuthLogoutRepoModel): Promise<AuthRefreshToken | null> {
+    async logout(model: AuthLogoutRepoModel): Promise<boolean> {
         return usersRepository.logoutUser(model);
     }
 
@@ -34,7 +33,8 @@ class AuthService implements IAuthService {
         const user: UserWithConfirmedViewModel | null = await userService.createUserWithVerification(model);
 
         if (user && !user.confirmed) {
-            await mailSender.sendRegistrationMail(user.email, user.confirmationCode);
+            // TODO по условиям, дожидаться оправки не надо.
+            mailSender.sendRegistrationMail(user.email, user.confirmationCode).then();
             return {
                 success: true
             }
@@ -52,7 +52,8 @@ class AuthService implements IAuthService {
     async tryResendConfirmationCode(model: AuthResendingEmailModel): Promise<AuthServiceResultModel> {
         const data: UserReplaceConfirmationData | null = await usersRepository.createUserReplaceConfirmationCode(model.email);
         if (data) {
-            await mailSender.sendRegistrationMail(data.email, data.code);
+            // TODO по условиям, дожидаться оправки не надо.
+            mailSender.sendRegistrationMail(data.email, data.code).then();
             return {
                 success: true
             }

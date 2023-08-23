@@ -5,6 +5,9 @@ class AuthHelper {
     applyRefreshToken(res: Response, refreshToken: string) {
         res.cookie(this.refreshTokenName, refreshToken, {httpOnly: true, secure: true})
     }
+    clearRefreshToken(res: Response): void {
+        res.clearCookie(this.refreshTokenName);
+    }
     getRefreshToken(req: Request): string | null {
         const cookies = req.cookies;
         return typeof cookies === 'object' ? cookies[this.refreshTokenName] : null

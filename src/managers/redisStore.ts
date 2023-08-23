@@ -1,46 +1,44 @@
-import Redis from "ioredis";
+import {toIsoString} from "../utils/date";
 
-const redisKey = 'queries'
+export type RateLimiterCounter = {
+    value: number,
+    exp: string,
+}
 
 class ReteLimiter {
-    private redis: Redis;
 
-    constructor() {
-        this.redis = new Redis()
-    }
+    constructor(private readonly redis = new Map<string, RateLimiterCounter>()) { }
 
-    getCounter(key: string) : Promise<number | null> {
-        return this.redis.get(key).then(val => val === null ? null : JSON.parse(val))
+    getCounter(key: string) : RateLimiterCounter | undefined {
+        return this.redis.get(key);
     }
 
     incCounter(key: string) {
-        return this.redis.incr(key)
+        const rateLimiterValue : RateLimiterCounter | undefined = this.redis.get(key);
+        if (rateLimiterValue) {
+            this.redis.set(key, {
+                ...rateLimiterValue,
+                value: rateLimiterValue.value + 1
+            })
+        }
     }
 
-    setExCounter(key: string, val: number, seconds: number) {
-        return this.redis.setex(key, seconds, val)
-    }
-
-    setEx(key: string, seconds: number) {
-        return this.redis.expire(key, seconds);
+    setCounter(key: string, val: number, seconds: number) {
+        const expDate = new Date().getTime() + seconds * 1000;
+        this.redis.set(key, {
+            exp: toIsoString(new Date(expDate)),
+            value: val
+        })
     }
 
     getTtl(key: string) {
-        return this.redis.ttl(key);
-    }
-
-    entries() {
-        return this.redis.hgetall(redisKey).then(queries => (
-            Object.keys(queries).map((key) => [key, JSON.parse(queries[key])])
-        ))
-    }
-
-    delete(key: string) {
-        return this.redis.hdel(redisKey, key)
-    }
-
-    clear() {
-        return this.redis.flushdb()
+        const rateLimiterValue : RateLimiterCounter | undefined = this.redis.get(key);
+        if (rateLimiterValue) {
+            const expTime = new Date(rateLimiterValue.exp).getTime();
+            const curTime = new Date().getTime();
+            return (expTime - curTime) / 1000;
+        }
+        return -1;
     }
 }
 

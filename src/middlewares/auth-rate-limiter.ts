@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from "express";
-import {rateLimiter} from "../managers/redisStore";
+import {rateLimiter, RateLimiterCounter} from "../managers/redisStore";
 import {Status} from "../types";
 import {authHelper} from "../managers/authHelper";
 
@@ -20,17 +20,16 @@ export const authRateLimiter = (limit: number = RATE_LIMIT, period: number = PER
 
         const key = `${ip}:${endpoint}`;
 
+        const count: RateLimiterCounter | undefined = rateLimiter.getCounter(key);
 
-        const ttl = await rateLimiter.getTtl(key);
-        const count: number | null = await rateLimiter.getCounter(key);
-
-        if (!count || ttl < 0) {
-            await rateLimiter.setExCounter(key, 1, period);
+        if (!count || rateLimiter.getTtl(key) < 0) {
+            await rateLimiter.setCounter(key, 1, period);
             return next();
         }
 
-        if (count < limit) {
-            await rateLimiter.incCounter(key);
+        await rateLimiter.incCounter(key);
+
+        if (count.value < limit) {
             return next();
         }
 

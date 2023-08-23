@@ -7,12 +7,15 @@ import {
     UserCreateModel,
     UserViewModel
 } from "../src/types";
-import supertest, {Response} from "supertest";
+import {agent, Response} from "supertest";
 import {app} from "../src/app";
-import {createAccessToken} from "../src/utils/tokenAdapter";
+import {createAccessToken, verifyRefreshToken} from "../src/utils/tokenAdapter";
 import {CommentCreateModel, CommentViewModel} from "../src/types/comments";
+import setCookie from "set-cookie-parser";
+import {AuthRefreshTokenPayload} from "../src/types/login";
+import {UUID} from "crypto";
 
-export const requestApp = supertest(app);
+export const requestApp = agent(app);
 export const authBasic64 = Buffer.from("admin:qwerty").toString("base64");
 
 export type BlogCreationTestModel = BlogCreateModel;
@@ -44,8 +47,25 @@ export const validCommentData: CommentCreationTestModel = {
 
 export type Cookie = {
     value: string,
-    flags: {}
 }
+
+export type SessionUnit = {
+    uuid: UUID,
+    payload: AuthRefreshTokenPayload,
+    refreshToken: string
+}
+
+export function refreshCookie(cookie: Cookie | undefined, session: SessionUnit) {
+    if (!cookie || !cookie.value) {
+        throw Error("Refresh cookie error")
+    }
+    const payload: AuthRefreshTokenPayload | null = verifyRefreshToken(cookie.value);
+    if (payload) {
+        session.payload = payload;
+        session.refreshToken = cookie.value;
+    }
+}
+
 
 export function generateString(length = 20) : string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -103,25 +123,11 @@ export const createUser = async (model: UserCreateModel) : Promise<UserViewModel
     return result.body;
 }
 
-export const cookieFlags = (flags: any) : any => {
-    return flags.reduce((shapedFlags: any, flag: any) => {
-        const [flagName, rawValue] = flag.split("=");
-        const value = rawValue ? rawValue.replace(";", "") : true;
-        return { ...shapedFlags, [flagName]: value };
-    }, {});
-}
-
-export const extractCookie = (res: Response, name: string) : Cookie =>  {
-    const cookies = res.headers["set-cookie"];
-
-    return cookies.reduce((shapedCookies: any, cookieString: any) => {
-        const [rawCookie, ...flags] = cookieString.split("; ");
-        const [cookieName, value] = rawCookie.split("=");
-        if (cookieName === name) {
-            return { value, flags: cookieFlags(flags) };
-        }
-        return shapedCookies;
-    }, {}) as Cookie;
+export const extractCookie = (res: Response, name: string) : Cookie | undefined =>  {
+    const decodedCookies = setCookie.parse(res.headers["set-cookie"], {
+        decodeValues: true  // default: true
+    });
+    return decodedCookies.find(cookie => cookie.name === name);
 };
 
 export const createCookie = (cookieObj: Object) : string =>  {

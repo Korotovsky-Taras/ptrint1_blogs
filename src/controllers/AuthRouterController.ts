@@ -4,7 +4,6 @@ import {authService} from "../services/AuthService";
 import {
     AuthLoginReqModel,
     AuthMeViewModel,
-    AuthRefreshToken,
     AuthRegisterConfirmationModel,
     AuthRegisterModel,
     AuthServiceResultModel,
@@ -33,13 +32,13 @@ class AuthRouterController implements IAuthRouterController {
     }
 
     async logout(req: Request, res: Response, next: NextFunction) {
-        if (req.userId) {
-            const refreshToken: AuthRefreshToken | null = await authService.logout({
+        if (req.userId && req.deviceId) {
+            const isLogout: boolean = await authService.logout({
                 userId: req.userId,
-                userAgent: authHelper.getUserAgent(req),
+                deviceId: req.deviceId,
             });
-            if (refreshToken) {
-                authHelper.applyRefreshToken(res, refreshToken);
+            if (isLogout) {
+                authHelper.clearRefreshToken(res);
                 return res.sendStatus(Status.NO_CONTENT)
             }
         }
@@ -47,9 +46,10 @@ class AuthRouterController implements IAuthRouterController {
     }
 
     async refreshToken(req: Request, res: Response, next: NextFunction) {
-        if (req.userId) {
+        if (req.userId && req.deviceId) {
             const auth: AuthTokens | null = await authService.refreshTokens({
                 userId: req.userId,
+                deviceId: req.deviceId,
                 userAgent: authHelper.getUserAgent(req),
                 ip: authHelper.getIp(req)
             });

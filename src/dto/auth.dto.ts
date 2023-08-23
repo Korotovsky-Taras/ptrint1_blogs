@@ -15,24 +15,25 @@ export const AuthDto = {
             userId: _id.toString(),
         }
     },
-    validationSession({uuid}: AuthSessionMongoModel): AuthSessionValidationModel {
+    validationSession({_id, uuid}: AuthSessionMongoModel): AuthSessionValidationModel {
         return {
             uuid,
+            deviceId: _id.toString(),
         }
     },
-    viewSession({deviceId, lastActiveDate, ip, userAgent}: AuthSessionMongoModel): AuthSessionViewModel {
+    viewSession({_id, lastActiveDate, ip, userAgent}: AuthSessionMongoModel): AuthSessionViewModel {
         return {
             ip,
-            deviceId,
             lastActiveDate,
             title: userAgent,
+            deviceId: _id.toString(),
         }
     },
-    dataSession({deviceId, userId, uuid}: AuthSessionMongoModel): AuthSessionDataModel {
+    dataSession({_id, userId, uuid}: AuthSessionMongoModel): AuthSessionDataModel {
         return {
             uuid,
             userId,
-            deviceId,
+            deviceId: _id.toString(),
         }
     },
     sessions(sessions: AuthSessionMongoModel[]): AuthSessionViewModel[] {

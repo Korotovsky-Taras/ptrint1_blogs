@@ -21,23 +21,10 @@ export const createAccessToken = (userId: string) : AuthAccessTokenPass => {
     return _createAccessToken(userId, toIsoString(expiredIn));
 }
 
-export const createRefreshToken = (userId: string, userAgent: string) : AuthRefreshTokenPass => {
+export const createRefreshToken = (userId: string, deviceId: string) : AuthRefreshTokenPass => {
     const expiredIn: Date = new Date();
     expiredIn.setTime(expiredIn.getTime() + 30 * 1000 * 60);
-    const deviceId = _createDeviceId(userId, userAgent);
     return _createRefreshToken(userId, deviceId, toIsoString(expiredIn));
-}
-
-export const createExpiredRefreshToken = (userId: string, userAgent: string) : AuthRefreshTokenPass => {
-    const expiredIn: Date = new Date();
-    const deviceId = _createDeviceId(userId, userAgent);
-    return _createRefreshToken(userId, deviceId, toIsoString(expiredIn));
-}
-
-const _createDeviceId = (userId: string, userAgent: string) : string => {
-    const hash = crypto.createHash('sha256');
-    hash.update(userId + userAgent);
-    return hash.digest('hex');
 }
 
 const _createAccessToken = (userId: string, expiredIn: string) : AuthAccessTokenPass => {

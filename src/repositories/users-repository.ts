@@ -22,7 +22,6 @@ import {
     AuthLoginRepoModel,
     AuthLogoutRepoModel,
     AuthMeViewModel,
-    AuthRefreshToken,
     AuthRefreshTokenPass,
     AuthRefreshTokenRepoModel,
     AuthSessionDataModel,
@@ -34,7 +33,7 @@ import {
 import {Filter, ObjectId} from "mongodb";
 import {AuthDto} from "../dto/auth.dto";
 import {randomUUID} from "crypto";
-import {createAccessToken, createExpiredRefreshToken, createRefreshToken} from "../utils/tokenAdapter";
+import {createAccessToken, createRefreshToken} from "../utils/tokenAdapter";
 import {toIsoString} from "../utils/date";
 
 
@@ -127,50 +126,65 @@ export const usersRepository = {
             if (user && user.confirmed) {
                 const isVerified = usersRepository._verifyPassword(model.password, user.password.salt, user.password.hash);
                 if (isVerified) {
-                    return usersRepository.refreshTokens({
-                        userId: user._id.toString(),
-                        userAgent: model.userAgent,
-                        ip: model.ip
-                    });
+                    const userId = user._id.toString();
+
+                    const deviceId = new ObjectId();
+                    const accessToken : AuthAccessTokenPass = createAccessToken(userId);
+                    const refreshToken : AuthRefreshTokenPass = createRefreshToken(userId, deviceId.toString());
+
+                    await authSessionsCollection.insertOne(
+                        {
+                            _id: deviceId,
+                            userId,
+                            userAgent: model.userAgent,
+                            ip: model.ip,
+                            uuid: refreshToken.uuid,
+                            lastActiveDate: refreshToken.expiredIn
+                        })
+
+                    return {
+                        accessToken : accessToken.token,
+                        refreshToken: refreshToken.token
+                    }
                 }
             }
             return null;
         });
     },
-    async logoutUser(model: AuthLogoutRepoModel): Promise<AuthRefreshToken | null> {
-        return withMongoLogger<AuthRefreshToken | null>(async () => {
+    async logoutUser(model: AuthLogoutRepoModel): Promise<boolean> {
+        return withMongoLogger<boolean>(async () => {
             const userId = model.userId;
-            const userAgent = model.userAgent;
+            const deviceId = model.deviceId;
             const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
             if (user && user.confirmed) {
-                const refreshToken : AuthRefreshTokenPass = createExpiredRefreshToken(userId, userAgent);
-                const res = await authSessionsCollection.deleteOne({userId, deviceId: refreshToken.deviceId});
-                if (res.deletedCount === 1) {
-                    return refreshToken.token;
-                }
+                const res = await authSessionsCollection.deleteOne({userId, _id: new ObjectId(deviceId)});
+                return res.deletedCount === 1;
             }
-            return null;
+            return false;
         });
     },
     async refreshTokens(model: AuthRefreshTokenRepoModel): Promise<AuthTokens | null> {
         return withMongoLogger<AuthTokens | null>(async () => {
             const userId = model.userId;
             const userAgent = model.userAgent;
+            const deviceId = model.deviceId;
+
             const user: UserMongoModel | null =  await usersCollection.findOne({_id: new ObjectId(userId)});
+
             if (user && user.confirmed) {
+
                 const accessToken : AuthAccessTokenPass = createAccessToken(userId);
-                const refreshToken : AuthRefreshTokenPass = createRefreshToken(userId, userAgent);
-                await authSessionsCollection.updateOne({userId, deviceId: refreshToken.deviceId},
-                    {
-                        $set: {
-                            userId,
-                            userAgent,
-                            ip: model.ip,
-                            uuid: refreshToken.uuid,
-                            deviceId: refreshToken.deviceId,
-                            lastActiveDate: refreshToken.expiredIn
-                        }
-                    }, {upsert: true})
+                const refreshToken : AuthRefreshTokenPass = createRefreshToken(userId, deviceId);
+
+                await authSessionsCollection.updateOne({_id: new ObjectId(deviceId)}, {
+                    $set: {
+                        userAgent,
+                        ip: model.ip,
+                        uuid: refreshToken.uuid,
+                        lastActiveDate: refreshToken.expiredIn
+                    }
+                })
+
                 return {
                     accessToken: accessToken.token,
                     refreshToken: refreshToken.token,
@@ -222,7 +236,7 @@ export const usersRepository = {
     },
     async getAuthSession(userId: string, deviceId: string): Promise<AuthSessionValidationModel | null> {
         return withMongoLogger<AuthSessionValidationModel | null>(async () => {
-            const session: AuthSessionMongoModel | null = await authSessionsCollection.findOne({userId, deviceId })
+            const session: AuthSessionMongoModel | null = await authSessionsCollection.findOne({userId, _id: new ObjectId(deviceId)})
             if (session) {
                 return AuthDto.validationSession(session)
             }
@@ -238,21 +252,21 @@ export const usersRepository = {
     async deleteAllSessions(model: AuthDeleteAllSessionsRepoModel): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
             const result = await authSessionsCollection.deleteMany({
-                userId: model.userId,
-                userAgent: { $ne: model.userAgent }
+                _id: { $ne: new ObjectId(model.deviceId) },
+                userId: model.userId
             });
             return result.deletedCount > 0;
         });
     },
     async deleteSession(userId: string, deviceId: string): Promise<boolean> {
         return withMongoLogger<boolean>(async () => {
-            const result = await authSessionsCollection.deleteOne({userId, deviceId})
+            const result = await authSessionsCollection.deleteOne({_id: new ObjectId(deviceId), userId})
             return result.deletedCount === 1;
         });
     },
     async findSessionByDeviceId(deviceId: string): Promise<AuthSessionDataModel | null> {
         return withMongoLogger<AuthSessionDataModel | null>(async () => {
-            const session: AuthSessionMongoModel | null = await authSessionsCollection.findOne({deviceId});
+            const session: AuthSessionMongoModel | null = await authSessionsCollection.findOne({_id: new ObjectId(deviceId)});
             if (session) {
                 return AuthDto.dataSession(session);
             }
